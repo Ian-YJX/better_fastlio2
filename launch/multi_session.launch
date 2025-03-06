@@ -1,4 +1,3 @@
-<!-- multi_session.launch -->
 <launch>
 
 	<arg name="rviz" default="true" />

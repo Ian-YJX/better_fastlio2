@@ -32,7 +32,7 @@ catkin_make
 ### 3.2 Docker 
 
 ```shell
-docker pull jonathonyin/better-fast-lio2:0.1.0
+docker pull jonathonyin/better-fast-lio2:0.2.0
 xhost +local:docker
 docker run -it \
     --gpus all \
@@ -41,14 +41,13 @@ docker run -it \
     --network host \
     -e DISPLAY=$DISPLAY \
     -e QT_X11_NO_MITSHM=1 \
-    -v ~/catkin_ws:/workspace/catkin_ws \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v /dev/video0:/dev/video0 \
     -v /dev/video1:/dev/video1 \
     -v /dev/snd:/dev/snd \
     --device=/dev/dri:/dev/dri \
     --name="better-fast-lio2" \
-    jonathonyin/better-fast-lio2:0.1.0
+    jonathonyin/better-fast-lio2:0.2.0
 #Now you've entered the Docker container
 cd /workspace/catkin_ws/src
 git clone https://github.com/Ian-YJX/better_fastlio2
@@ -57,12 +56,6 @@ cd ..
 catkin_make #if you have met an error like "fatal error: fast_lio_sam/Pose6D.h: No such file or directory",just try again. This is due to the improper order of some lines in CMakeLists.txt
 ```
 
-One problem: if you want to use RViz or Gazebo, exit the container and enter again
-
-```shell
-docker start better-fast-lio2
-docker exec -it better-fast-lio2 /bin/bash
-```
 ## 4 How to Use
 ### 4.1 LIO Mapping using Livox, Velodyne, Ouster or Robosense
 

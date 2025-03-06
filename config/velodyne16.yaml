@@ -1,10 +1,10 @@
 common:
     lid_topic:  "/velodyne_points"
-    imu_topic:  "/handsfree/imu"
+    imu_topic:  "/imu/data"
     camera_topic: "/usb_cam/image_raw"
     time_sync_en: false         # ONLY turn on when external time synchronization is really not possible
 
-    rootDir: "/home/yixin-f/fast-lio2/src/data_lio/"
+    rootDir: "/home/ian/catkin_ws/data_lio/"
     savePCD: true                         # https://github.com/TixiaoShan/LIO-SAM/issues/3
     savePCDDirectory: "PCDs/"        
     saveSCD: true 
@@ -15,7 +15,7 @@ common:
     pcd_save_interval: 1                 # how many LiDAR frames saved in each pcd
     
 preprocess:
-    lidar_type: 2                # 1 for Livox serials LiDAR, 2 for Velodyne LiDAR
+    lidar_type: 2                # 1 for Livox serials LiDAR, 2 for Velodyne LiDAR,
     livox_type: 1                # 1 for LIVOX_CUS
     scan_line:  16
     blind: 2

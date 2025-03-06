@@ -7,8 +7,8 @@
 #include <ikd-Tree/ikd_Tree.h>
 #include "IMU_Processing.hpp"
 
-#include"sc-relo/Scancontext.h"
-#include"dynamic-remove/tgrs.h"
+#include "sc-relo/Scancontext.h"
+#include "dynamic-remove/tgrs.h"
 
 #define INIT_TIME (0.1)
 #define LASER_POINT_COV (0.001)
@@ -29,10 +29,10 @@ double match_time = 0, solve_time = 0, solve_const_H_time = 0;
 int kdtree_size_st = 0, kdtree_size_end = 0, add_point_size = 0, kdtree_delete_counter = 0;
 
 // common
-bool savePCD = false, saveSCD = false, saveLOG = false, map_save_en = false, time_sync_en = false; 
+bool savePCD = false, saveSCD = false, saveLOG = false, map_save_en = false, time_sync_en = false;
 string rootDir, savePCDDirectory, saveSCDDirectory, saveLOGDirectory;
 string lid_topic, camera_topic, imu_topic; // topic;
-string root_dir = ROOT_DIR; // TODO: ?
+string root_dir = ROOT_DIR;                // TODO: ?
 
 // segment
 float sensor_height;
@@ -41,8 +41,8 @@ float z_tollerance;
 float rotation_tollerance;
 
 // mapping
-bool  extrinsic_est_en = true;  // 在线标定
-float DET_RANGE = 300.0f;  // 当前雷达系中心到各个地图边缘的距离;
+bool extrinsic_est_en = true; // 在线标定
+float DET_RANGE = 300.0f;     // 当前雷达系中心到各个地图边缘的距离;
 // 雷达时间戳;imu时间戳;
 double last_timestamp_lidar = 0, last_timestamp_imu = -1.0;
 // 残差平均值;残差和;
@@ -55,7 +55,7 @@ const float MOV_THRESHOLD = 1.5f; // 当前雷达系中心到各个地图边缘�
 // 地图的最小尺寸;视野角度;
 double filter_size_map_min, fov_deg = 0;
 int kd_step = 0;
-float mappingSurfLeafSize;  // map filter
+float mappingSurfLeafSize; // map filter
 // 立方体长度;视野一半的角度;视野总角度;总距离;雷达结束时间;雷达初始时间;
 double cube_len = 0, HALF_FOV_COS = 0, FOV_DEG = 0, total_distance = 0, lidar_end_time = 0, first_lidar_time = 0.0;
 // 有效特征点数;时间log计数器;接收到的激光雷达Msg的总数;接收到的IMU的Msg的总数;
@@ -70,12 +70,13 @@ float keyframeAddingDistThreshold;  // 判断是否为关键帧的距离阈值,y
 float keyframeAddingAngleThreshold; // 判断是否为关键帧的角度阈值,yaml
 float surroundingKeyframeDensity;
 
-std::vector<pose> update_nokf_poses;
+// std::vector<pose> update_nokf_poses;
+std::vector<pose_with_time> update_nokf_poses;
 
 // loop
 bool startFlag = true;
 bool loopClosureEnableFlag;
-float loopClosureFrequency; // 回环检测频率
+float loopClosureFrequency;          // 回环检测频率
 float historyKeyframeSearchRadius;   // 回环检测radius kdtree搜索半径
 float historyKeyframeSearchTimeDiff; // 帧间时间阈值
 int historyKeyframeSearchNum;        // 回环时多少个keyframe拼成submap
@@ -90,24 +91,35 @@ bool scan_pub_en = false, dense_pub_en = false, scan_body_pub_en = false;
 mutex mtx_buffer;              // 互斥锁;
 condition_variable sig_buffer; // 条件变量;
 
-vector<vector<int>> pointSearchInd_surf;      // 每个点的索引,暂时没用到
-vector<BoxPointType> cub_needrm;              // ikdtree中,地图需要移除的包围盒序列
-vector<PointVector> Nearest_Points;           // 每个点的最近点序列
+vector<vector<int>> pointSearchInd_surf; // 每个点的索引,暂时没用到
+vector<BoxPointType> cub_needrm;         // ikdtree中,地图需要移除的包围盒序列
+vector<PointVector> Nearest_Points;      // 每个点的最近点序列
 vector<double> extrinT(3, 0.0);               // 雷达相对于IMU的外参T
 vector<double> extrinR(9, 0.0);               // 雷达相对于IMU的外参R
-deque<double> time_buffer;                    // 激光雷达数据时间戳缓存队列
-deque<pcl::PointCloud<PointType>::Ptr> lidar_buffer;      // 记录特征提取或间隔采样后的lidar(特征)数据
-deque<sensor_msgs::Imu::ConstPtr> imu_buffer; // IMU数据缓存队列
+// vector<double> extrinR = {
+//     0.999610, 0.027142, 0.006295,
+//     -0.026102, 0.027188, -0.999606,
+//     -0.006972, 0.038266, 0.006403};
+
+// vector<double> extrinT = {
+//     0.007149,  // X 方向平移量
+//     -0.999954, // Y 方向平移量
+//     -0.297789  // Z 方向平移量
+// };
+
+deque<double> time_buffer;                           // 激光雷达数据时间戳缓存队列
+deque<pcl::PointCloud<PointType>::Ptr> lidar_buffer; // 记录特征提取或间隔采样后的lidar(特征)数据
+deque<sensor_msgs::Imu::ConstPtr> imu_buffer;        // IMU数据缓存队列
 
 pcl::PointCloud<PointType>::Ptr featsFromMap(new pcl::PointCloud<PointType>());           // 提取地图中的特征点,ikdtree获得
 pcl::PointCloud<PointType>::Ptr feats_undistort(new pcl::PointCloud<PointType>());        // 去畸变的点云,lidar系
-pcl::PointCloud<PointType>::Ptr feats_undistort_copy(new pcl::PointCloud<PointType>());        // 去畸变的点云,lidar系
+pcl::PointCloud<PointType>::Ptr feats_undistort_copy(new pcl::PointCloud<PointType>());   // 去畸变的点云,lidar系
 pcl::PointCloud<PointType>::Ptr feats_down_body(new pcl::PointCloud<PointType>());        // 畸变纠正后降采样的单帧点云,lidar系
 pcl::PointCloud<PointType>::Ptr feats_down_world(new pcl::PointCloud<PointType>());       // 畸变纠正后降采样的单帧点云,world系
 pcl::PointCloud<PointType>::Ptr normvec(new pcl::PointCloud<PointType>(100000, 1));       // 特征点在地图中对应点的,局部平面参数,world系
 pcl::PointCloud<PointType>::Ptr laserCloudOri(new pcl::PointCloud<PointType>(100000, 1)); // 畸变纠正后降采样的单帧点云,imu(body)系
 pcl::PointCloud<PointType>::Ptr corr_normvect(new pcl::PointCloud<PointType>(100000, 1)); // 对应点法相量
-pcl::PointCloud<PointType>::Ptr _featsArray;                                  // ikdtree中,map需要移除的点云
+pcl::PointCloud<PointType>::Ptr _featsArray;                                              // ikdtree中,map需要移除的点云
 
 pcl::VoxelGrid<PointType> downSizeFilterSurf; // 单帧内降采样使用voxel grid
 pcl::VoxelGrid<PointType> downSizeFilterMap;  // 未使用
@@ -119,10 +131,11 @@ KD_TREE<PointType> ikdtree; // ikdtree new 类
 ScanContext::SCManager scLoop; // sc 类
 
 // giseop，Scan Context的输入格式
-enum class SCInputType { 
-    SINGLE_SCAN_FULL, 
-    MULTI_SCAN_FEAT 
-}; 
+enum class SCInputType
+{
+    SINGLE_SCAN_FULL,
+    MULTI_SCAN_FEAT
+};
 
 V3F XAxisPoint_body(LIDAR_SP_LEN, 0.0, 0.0);
 V3F XAxisPoint_world(LIDAR_SP_LEN, 0.0, 0.0);
@@ -224,7 +237,7 @@ ros::ServiceServer srvSaveMap;
 ros::ServiceServer srvSavePose;
 
 // pose-graph  saver
-std::fstream pgSaveStream; // pg: pose-graph 
+std::fstream pgSaveStream; // pg: pose-graph
 std::vector<std::string> edges_str;
 std::vector<std::string> vertices_str;
 
@@ -410,11 +423,18 @@ void updatePath(const PointTypePose &pose_in)
 
     Eigen::Matrix3d R = Exp((double)pose_in.roll, (double)pose_in.pitch, (double)pose_in.yaw);
     Eigen::Vector3d t((double)pose_in.x, (double)pose_in.y, (double)pose_in.z);
-    pose update_pose;
+    ros::Time ts = ros::Time().fromSec(pose_in.time);
+    // pose update_pose;
+    // update_pose.R = R;
+    // update_pose.t = t;
+    // update_nokf_poses.emplace_back(update_pose);
+
+    pose_with_time update_pose;
     update_pose.R = R;
     update_pose.t = t;
+    update_pose.timestamp = ts;
     update_nokf_poses.emplace_back(update_pose);
-    
+
     // fout_update_pose << std::fixed << R(0, 0) << " " << R(0, 1) << " " << R(0, 2) << " " << t[0] << " "
     //     << R(1, 0) << " " << R(1, 1) << " " << R(1, 2) << " " << t[1] << " "
     //     << R(2, 0) << " " << R(2, 1) << " " << R(2, 2) << " " << t[2] << std::endl;
@@ -425,7 +445,7 @@ void updatePath(const PointTypePose &pose_in)
 inline float constraintTransformation(float value, float limit)
 {
     if (value < -limit)
-            value = -limit;
+        value = -limit;
     if (value > limit)
         value = limit;
 
@@ -445,14 +465,15 @@ void getCurPose(state_ikfom cur_state)
     transformTobeMapped[4] = cur_state.pos(1); // y
     transformTobeMapped[5] = cur_state.pos(2); // z
 
-    if(tollerance_en){  // TODO: human constraint in z and roll oitch
-        transformTobeMapped[0] = constraintTransformation(transformTobeMapped[0], rotation_tollerance);    // roll
-        transformTobeMapped[1] = constraintTransformation(transformTobeMapped[1], rotation_tollerance);    // pitch
+    if (tollerance_en)
+    {                                                                                                   // TODO: human constraint in z and roll oitch
+        transformTobeMapped[0] = constraintTransformation(transformTobeMapped[0], rotation_tollerance); // roll
+        transformTobeMapped[1] = constraintTransformation(transformTobeMapped[1], rotation_tollerance); // pitch
         transformTobeMapped[5] = constraintTransformation(transformTobeMapped[5], z_tollerance);
     }
 }
 
-// TODO: rviz展示回环边, can be used for relocalization 
+// TODO: rviz展示回环边, can be used for relocalization
 void visualizeLoopClosure()
 {
     ros::Time timeLaserInfoStamp = ros::Time().fromSec(lidar_end_time); // 时间戳
@@ -576,7 +597,7 @@ void addOdomFactor()
         initialEstimate.insert(cloudKeyPoses3D->size(), poseTo);
 
         writeVertex(cloudKeyPoses3D->size(), poseTo, vertices_str);
-        writeEdge({cloudKeyPoses3D->size()-1, cloudKeyPoses3D->size()}, relPose, edges_str); 
+        writeEdge({cloudKeyPoses3D->size() - 1, cloudKeyPoses3D->size()}, relPose, edges_str);
     }
 }
 
@@ -601,7 +622,7 @@ void addLoopFactor()
         writeEdge({indexFrom, indexTo}, poseBetween, edges_str);
     }
     // 清空回环相关队列
-    loopIndexQueue.clear();  // it's very necessary
+    loopIndexQueue.clear(); // it's very necessary
     loopPoseQueue.clear();
     loopNoiseQueue.clear();
 
@@ -611,7 +632,7 @@ void addLoopFactor()
 // TODO: update ikdtree for better visualization at a certain frequency
 void recontructIKdTree()
 {
-    if (updateKdtreeCount == kd_step)  
+    if (updateKdtreeCount == kd_step)
     {
         /*** if path is too large, the rviz will crash ***/
         pcl::KdTreeFLANN<PointType>::Ptr kdtreeGlobalMapPoses(new pcl::KdTreeFLANN<PointType>());
@@ -646,7 +667,7 @@ void recontructIKdTree()
             *subMapKeyFrames += *transformPointCloud(surfCloudKeyFrames[thisKeyInd], &cloudKeyPoses6D->points[thisKeyInd]); //  fast_lio only use  surfCloud
         }
         // 降采样，发布
-        pcl::VoxelGrid<PointType> downSizeFilterGlobalMapKeyFrames;      // for global map visualization
+        pcl::VoxelGrid<PointType> downSizeFilterGlobalMapKeyFrames;                                                                                   // for global map visualization
         downSizeFilterGlobalMapKeyFrames.setLeafSize(globalMapVisualizationLeafSize, globalMapVisualizationLeafSize, globalMapVisualizationLeafSize); // for global map visualization
         downSizeFilterGlobalMapKeyFrames.setInputCloud(subMapKeyFrames);
         downSizeFilterGlobalMapKeyFrames.filter(*subMapKeyFramesDS);
@@ -696,14 +717,15 @@ void saveKeyFramesAndFactor()
     isam->update();
 
     // TODO: 如果加入了回环约束,isam需要进行更多次的优化
-    if (aLoopIsClosed == true){
+    if (aLoopIsClosed == true)
+    {
         cout << "pose is upated by isam " << endl;
         isam->update();
         isam->update();
         isam->update();
         isam->update();
     }
-    
+
     // update之后要清空一下保存的因子图,注:清空不会影响优化,ISAM保存起来了
     gtSAMgraph.resize(0);
     initialEstimate.clear();
@@ -750,17 +772,18 @@ void saveKeyFramesAndFactor()
     state_updated.rot = q;
     state_point = state_updated; // 对state_point进行更新,state_point可视化用到
 
-    if(aLoopIsClosed == true)
+    if (aLoopIsClosed == true)
         kf.change_x(state_updated); // 对cur_pose进行isam2优化后的修正
 
     pcl::PointCloud<PointType>::Ptr thisSurfKeyFrame(new pcl::PointCloud<PointType>());
     pcl::copyPointCloud(*feats_undistort, *thisSurfKeyFrame); // 存储关键帧,没有降采样的点云
     surfCloudKeyFrames.push_back(thisSurfKeyFrame);
 
-    updatePath(thisPose6D); // 可视化update后的最新位姿 
+    updatePath(thisPose6D); // 可视化update后的最新位姿
 
     // 清空局部map, reconstruct  ikdtree submap
-    if (recontructKdTree){
+    if (recontructKdTree)
+    {
         recontructIKdTree();
     }
 }
@@ -795,10 +818,11 @@ void correctPoses()
         }
 
         // 清空局部map, reconstruct  ikdtree submap
-        if (recontructKdTree){
+        if (recontructKdTree)
+        {
             recontructIKdTree();
         }
-        
+
         ROS_INFO("ISMA2 Update");
         aLoopIsClosed = false;
     }
@@ -865,10 +889,12 @@ void loopFindNearKeyframes(pcl::PointCloud<PointType>::Ptr &nearKeyframes, const
         if (keyNear < 0 || keyNear >= cloudSize)
             continue;
         // 注意:cloudKeyPoses6D存储的是T_w_b,而点云是lidar系下的,构建submap时,要把点云转到cur点云系下
-        if(i == 0){
+        if (i == 0)
+        {
             *nearKeyframes += *surfCloudKeyFrames[keyNear]; // cur点云本身保持不变
         }
-        else{
+        else
+        {
             Eigen::Affine3f keyTrans = pcl::getTransformation(copy_cloudKeyPoses6D->points[key].x, copy_cloudKeyPoses6D->points[key].y, copy_cloudKeyPoses6D->points[key].z, copy_cloudKeyPoses6D->points[key].roll, copy_cloudKeyPoses6D->points[key].pitch, copy_cloudKeyPoses6D->points[key].yaw);
             Eigen::Affine3f keyNearTrans = pcl::getTransformation(copy_cloudKeyPoses6D->points[keyNear].x, copy_cloudKeyPoses6D->points[keyNear].y, copy_cloudKeyPoses6D->points[keyNear].z, copy_cloudKeyPoses6D->points[keyNear].roll, copy_cloudKeyPoses6D->points[keyNear].pitch, copy_cloudKeyPoses6D->points[keyNear].yaw);
             Eigen::Affine3f finalTrans = keyTrans.inverse() * keyNearTrans;
@@ -906,7 +932,7 @@ void performLoopClosure()
     int loopKeyPre; // 候选回环匹配帧索引
 
     // 根据里程计的距离来检测回环,如果还没有回环则直接返回
-    if (detectLoopClosureDistance(&loopKeyCur, &loopKeyPre) == false)  
+    if (detectLoopClosureDistance(&loopKeyCur, &loopKeyPre) == false)
     {
         return;
     }
@@ -921,9 +947,10 @@ void performLoopClosure()
         // 提取历史回环帧周围的点云特征点集合,降采样
         loopFindNearKeyframes(prevKeyframeCloud, loopKeyPre, historyKeyframeSearchNum); // 选取historyKeyframeSearchNum个keyframe拼成submap，并转换到cureKeyframeCloud系下
         // 发布回环局部地图submap
-        if (pubHistoryKeyFrames.getNumSubscribers() != 0){
+        if (pubHistoryKeyFrames.getNumSubscribers() != 0)
+        {
             pcl::PointCloud<PointType>::Ptr pubKrevKeyframeCloud(new pcl::PointCloud<PointType>());
-            *pubKrevKeyframeCloud += *transformPointCloud(prevKeyframeCloud, &copy_cloudKeyPoses6D->points[loopKeyCur]);  // 将submap转换到world系再发布
+            *pubKrevKeyframeCloud += *transformPointCloud(prevKeyframeCloud, &copy_cloudKeyPoses6D->points[loopKeyCur]); // 将submap转换到world系再发布
             publishCloud(&pubHistoryKeyFrames, pubKrevKeyframeCloud, timeLaserInfoStamp, odometryFrame);
         }
     }
@@ -934,14 +961,14 @@ void performLoopClosure()
     std::pair<double, int> simScore = scLoop.distanceBtnScanContext(cureKeyframeSC, prevKeyframeSC);
     double dist = simScore.first;
     int align = simScore.second;
-    if(dist > scLoop.SC_DIST_THRES){
+    if (dist > scLoop.SC_DIST_THRES)
+    {
         cout << "but they can not be detected by SC." << endl;
-        return ;
+        return;
     }
-    std::cout.precision(3);  // TODO: 如果使用sc全局定位，必须将保存的scd精度为3
-    cout << "[SC Loop found]"  << " curKeyFrame: " << loopKeyCur << " loopKeyFrame: " << loopKeyPre 
-              << " distance: " << dist << " nn_align: " << align * scLoop.PC_UNIT_SECTORANGLE << " deg." << endl;
-    
+    std::cout.precision(3); // TODO: 如果使用sc全局定位，必须将保存的scd精度为3
+    cout << "[SC Loop found]" << " curKeyFrame: " << loopKeyCur << " loopKeyFrame: " << loopKeyPre
+         << " distance: " << dist << " nn_align: " << align * scLoop.PC_UNIT_SECTORANGLE << " deg." << endl;
 
     // ICP设置
     pcl::IterativeClosestPoint<PointType, PointType> icp; // 使用icp来进行帧到局部地图的配准
@@ -968,13 +995,14 @@ void performLoopClosure()
     icp.align(*unused_result); // 进行ICP配准,输出变换后点云
 
     // 检测icp是否收敛以及得分是否满足要求
-    if (icp.hasConverged() == false || icp.getFitnessScore() > historyKeyframeFitnessScore){
+    if (icp.hasConverged() == false || icp.getFitnessScore() > historyKeyframeFitnessScore)
+    {
         cout << "but they can not be registered by ICP." << " icpFitnessScore: " << icp.getFitnessScore() << endl;
         return;
     }
     std::cout.precision(3);
     cout << "[ICP Regiteration success ] " << " curKeyFrame: " << loopKeyCur << " loopKeyFrame: " << loopKeyPre
-              << " icpFitnessScore: " << icp.getFitnessScore() << endl;
+         << " icpFitnessScore: " << icp.getFitnessScore() << endl;
 
     // 发布当前关键帧经过回环优化后的位姿变换之后的特征点云供可视化使用
     if (pubIcpKeyFrames.getNumSubscribers() != 0)
@@ -1297,10 +1325,76 @@ void livox_ros_cbk(const sensor_msgs::PointCloud2::ConstPtr &msg)
 }
 
 // sensor_msgs::Imu格式IMU数据的回调函数,将数据引入buffer中
+// void imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in)
+// {
+//     publish_count++;
+//     sensor_msgs::Imu::Ptr msg(new sensor_msgs::Imu(*msg_in));
+
+//     // lidar和imu时间差过大且开启时间同步时,纠正当前输入imu的时间
+//     if (abs(timediff_lidar_wrt_imu) > 0.1 && time_sync_en)
+//     {
+//         // 将imu时间纠正为时间差+原始时间(激光雷达时间)
+//         msg->header.stamp = ros::Time().fromSec(timediff_lidar_wrt_imu + msg_in->header.stamp.toSec());
+//     }
+
+//     double timestamp = msg->header.stamp.toSec(); // IMU时间戳
+
+//     mtx_buffer.lock(); // 加锁
+//     // 如果当前IMU的时间戳小于上一个时刻,则IMU数据有误,将IMU数据缓存队列清空
+//     if (timestamp < last_timestamp_imu)
+//     {
+//         ROS_WARN("imu loop back, clear buffer");
+//         imu_buffer.clear();
+//     }
+
+//     last_timestamp_imu = timestamp; // 记录最后一个IMU时间
+
+//     imu_buffer.push_back(msg); // IMU存入缓冲区
+//     mtx_buffer.unlock();       // 解锁
+//     sig_buffer.notify_all();   // 唤醒所有线程
+// }
+
+bool filterIMU(double &value, double mu, double sigma)
+{
+    if (abs(value - mu) > 3 * sigma)
+        return false;
+    else
+        return true;
+    // if (value < mu - 3 * sigma)
+    // {
+    //     value = mu - 3 * sigma;
+    //     return false;
+    // }
+    // else if (value > mu + 3 * sigma)
+    // {
+    //     value = mu + 3 * sigma;
+    //     return false;
+    // }
+    // else
+    //     return true;
+}
+
 void imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in)
 {
     publish_count++;
     sensor_msgs::Imu::Ptr msg(new sensor_msgs::Imu(*msg_in));
+
+    // 定义μ和σ（可以稍后手动设置这些值）
+    double mu_angular_velocity_x = -0.0016;
+    double sigma_angular_velocity_x = 0.0073;
+    double mu_angular_velocity_y = -0.0002;
+    double sigma_angular_velocity_y = 0.0262;
+    double mu_angular_velocity_z = 0.0395;
+    double sigma_angular_velocity_z = 0.0595;
+
+    double mu_linear_acceleration_x = 0.4097;
+    double sigma_linear_acceleration_x = 0.8147;
+    double mu_linear_acceleration_y = 0.0588;
+    double sigma_linear_acceleration_y = 0.2863;
+    double mu_linear_acceleration_z = -9.5680;
+    double sigma_linear_acceleration_z = 0.3295;
+
+    // 可以为其他字段添加相似的定义
 
     // lidar和imu时间差过大且开启时间同步时,纠正当前输入imu的时间
     if (abs(timediff_lidar_wrt_imu) > 0.1 && time_sync_en)
@@ -1321,9 +1415,20 @@ void imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in)
 
     last_timestamp_imu = timestamp; // 记录最后一个IMU时间
 
-    imu_buffer.push_back(msg); // IMU存入缓冲区
-    mtx_buffer.unlock();       // 解锁
-    sig_buffer.notify_all();   // 唤醒所有线程
+    // 检查IMU数据字段是否在μ±3σ范围内，若超出则重新赋值为边界值
+    // 对 linear_acceleration_x 进行检查
+    bool flag = true;
+    flag &= filterIMU(msg->linear_acceleration.x, mu_linear_acceleration_x, sigma_linear_acceleration_x);
+    flag &= filterIMU(msg->linear_acceleration.y, mu_linear_acceleration_y, sigma_linear_acceleration_y);
+    flag &= filterIMU(msg->linear_acceleration.z, mu_linear_acceleration_z, sigma_linear_acceleration_z);
+    flag &= filterIMU(msg->angular_velocity.x, mu_angular_velocity_x, sigma_angular_velocity_x);
+    flag &= filterIMU(msg->angular_velocity.y, mu_angular_velocity_y, sigma_angular_velocity_y);
+    flag &= filterIMU(msg->angular_velocity.z, mu_angular_velocity_z, sigma_angular_velocity_z);
+    // 将IMU存入缓冲区
+    if (flag)
+        imu_buffer.push_back(msg); // IMU存入缓冲区
+    mtx_buffer.unlock();           // 解锁
+    sig_buffer.notify_all();       // 唤醒所有线程
 }
 
 // livox custom转pcl
@@ -1505,7 +1610,7 @@ void publish_frame_world(const ros::Publisher &pubLaserCloudFull)
     {
         // 发布稠密点云还是降采样点云
         pcl::PointCloud<PointType>::Ptr laserCloudFullRes(dense_pub_en ? feats_undistort : feats_down_body);
-        int size = laserCloudFullRes->points.size();                      // 获取待转换点云的大小
+        int size = laserCloudFullRes->points.size();                                              // 获取待转换点云的大小
         pcl::PointCloud<PointType>::Ptr laserCloudWorld(new pcl::PointCloud<PointType>(size, 1)); // W坐标系的点云
         // 转换到world系
         for (int i = 0; i < size; i++)
@@ -1535,7 +1640,7 @@ void publish_frame_world(const ros::Publisher &pubLaserCloudFull)
             RGBpointBodyToWorld(&feats_undistort->points[i],
                                 &laserCloudWorld->points[i]);
         }
-        *pcl_wait_save += *laserCloudWorld;   // world
+        *pcl_wait_save += *laserCloudWorld; // world
     }
 }
 
@@ -1634,7 +1739,8 @@ void publish_odometry(const ros::Publisher &pubOdomAftMapped)
     br.sendTransform(tf::StampedTransform(transform, odomAftMapped.header.stamp, "camera_init", "body"));
 }
 
-void publish_path_imu(const ros::Publisher pubPath){
+void publish_path_imu(const ros::Publisher pubPath)
+{
     msg_imu_pose.header.stamp = ros::Time().fromSec(lidar_end_time);
     msg_imu_pose.header.frame_id = "camera_init";
 
@@ -1916,7 +2022,8 @@ void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_
         if (!point_selected_surf[i])
             continue;
 
-        VF(4) pabcd;                          // 平面点信息
+        VF(4)
+        pabcd;                          // 平面点信息
         point_selected_surf[i] = false; // 将该点设置为无效点，用来计算是否为平面点
         // 拟合平面方程ax+by+cz+d=0并求解点到平面距离,返回:是否有内点大于距离阈值
         if (esti_plane(pabcd, points_near, 0.1f))
@@ -1964,8 +2071,8 @@ void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_
     double solve_start_ = omp_get_wtime();
 
     /*** Computation of Measuremnt Jacobian matrix H and measurents vector ***/
-    ekfom_data.h_x = MatrixXd::Zero(effct_feat_num, 12); //定义H维度
-    ekfom_data.h.resize(effct_feat_num);                 //有效方程个数
+    ekfom_data.h_x = MatrixXd::Zero(effct_feat_num, 12); // 定义H维度
+    ekfom_data.h.resize(effct_feat_num);                 // 有效方程个数
 
     for (int i = 0; i < effct_feat_num; i++)
     {
@@ -1979,12 +2086,12 @@ void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_
 
         /*** get the normal vector of closest surface/corner ***/
         const PointType &norm_p = corr_normvect->points[i];
-        V3D norm_vec(norm_p.x, norm_p.y, norm_p.z); //对应局部法相量, world系下
+        V3D norm_vec(norm_p.x, norm_p.y, norm_p.z); // 对应局部法相量, world系下
 
         /*** calculate the Measuremnt Jacobian matrix H ***/
         V3D C(s.rot.conjugate() * norm_vec); // 将对应局部法相量旋转到imu系下 corr_normal_I
-        V3D A(point_crossmat * C);           //残差对角度求导系数 P(IMU)^ [R(imu <-- w) * normal_w]
-        //添加数据到矩阵
+        V3D A(point_crossmat * C);           // 残差对角度求导系数 P(IMU)^ [R(imu <-- w) * normal_w]
+        // 添加数据到矩阵
         if (extrinsic_est_en)
         {
             // B = lidar_p^ R(L <-- I) * corr_normal_I
@@ -2010,24 +2117,24 @@ int main(int argc, char **argv)
         transformTobeMapped[i] = 0;
     }
 
-    ros::init(argc, argv, "laserMapping"); 
+    ros::init(argc, argv, "laserMapping");
     ros::NodeHandle nh;
 
     // topic
-    nh.param<string>("common/lid_topic", lid_topic, "/livox/lidar");
-    nh.param<string>("common/imu_topic", imu_topic, "/livox/imu");
-    nh.param<string>("common/camera_topic", camera_topic, "/usb_cam/image_raw");
-    nh.param<bool>("common/time_sync_en", time_sync_en, false);
+    nh.param<string>("common/lid_topic", lid_topic, "");
+    nh.param<string>("common/imu_topic", imu_topic, "");
+    nh.param<string>("common/camera_topic", camera_topic, "");
+    nh.param<bool>("common/time_sync_en", time_sync_en, "");
 
     // export path
     nh.param<std::string>("common/rootDir", rootDir, "");
-    nh.param<bool>("common/savePCD", savePCD, false);
+    nh.param<bool>("common/savePCD", savePCD, "");
     nh.param<std::string>("common/savePCDDirectory", savePCDDirectory, "");
-    nh.param<bool>("common/saveSCD", saveSCD, false);
+    nh.param<bool>("common/saveSCD", saveSCD, "");
     nh.param<std::string>("common/saveSCDDirectory", saveSCDDirectory, "");
-    nh.param<bool>("common/saveLOG", saveLOG, false);
+    nh.param<bool>("common/saveLOG", saveLOG, "");
     nh.param<std::string>("common/saveLOGDirectory", saveLOGDirectory, "");
-    nh.param<bool>("common/map_save_en", map_save_en, false);
+    nh.param<bool>("common/map_save_en", map_save_en, "");
     nh.param<int>("common/pcd_save_interval", pcd_save_interval, -1);
 
     // preprocess
@@ -2040,7 +2147,7 @@ int main(int argc, char **argv)
     nh.param<bool>("preprocess/feature_extract_enable", p_pre->feature_enabled, false);
     nh.param<int>("preprocess/time_unit", p_pre->time_unit, US);
 
-    // camera 
+    // camera
     nh.param<bool>("camera/camera_en", camera_en, false);
     nh.param<vector<double>>("camera/camera_external", cam_ex, vector<double>());
     nh.param<vector<double>>("camera/camera_internal", cam_in, vector<double>());
@@ -2052,7 +2159,7 @@ int main(int argc, char **argv)
     nh.param<double>("mapping/b_acc_cov", b_acc_cov, 0.0001);
     nh.param<float>("mapping/det_range", DET_RANGE, 300.f);
     nh.param<double>("mapping/fov_degree", fov_deg, 180);
-    nh.param<bool>("mapping/extrinsic_est_en", extrinsic_est_en, true);
+    nh.param<bool>("mapping/extrinsic_est_en", extrinsic_est_en, false);
     nh.param<float>("mapping/mappingSurfLeafSize", mappingSurfLeafSize, 0.2);
     nh.param<double>("mapping/cube_len", cube_len, 200);
     nh.param<float>("mapping/keyframeAddingDistThreshold", keyframeAddingDistThreshold, 20.0);
@@ -2072,7 +2179,7 @@ int main(int argc, char **argv)
     nh.param<bool>("segment/tollerance_en", tollerance_en, false);
     nh.param<float>("segment/z_tollerance", z_tollerance, 1.0);
     nh.param<float>("segment/rotation_tollerance", rotation_tollerance, 0.2);
-    
+
     // loop clousre
     nh.param<bool>("loop/loopClosureEnableFlag", loopClosureEnableFlag, true);
     nh.param<float>("loop/loopClosureFrequency", loopClosureFrequency, 1.0);
@@ -2092,7 +2199,7 @@ int main(int argc, char **argv)
     nh.param<bool>("publish/scan_publish_en", scan_pub_en, true);
     nh.param<bool>("publish/dense_publish_en", dense_pub_en, true);
     nh.param<bool>("publish/scan_bodyframe_pub_en", scan_body_pub_en, true);
-    
+
     paramSetting(); // 设置相机的内参、相机到LiDAR的外参
 
     // downSizeFilterSurf.setLeafSize(mappingSurfLeafSize, mappingSurfLeafSize, mappingSurfLeafSize);
@@ -2123,7 +2230,7 @@ int main(int argc, char **argv)
     bool flg_EKF_converged, EKF_stop_flg = 0; // 卡尔曼滤波收敛标志,卡尔曼滤波停止标志
 
     FOV_DEG = (fov_deg + 10.0) > 179.9 ? 179.9 : (fov_deg + 10.0); // 视场角度
-    HALF_FOV_COS = cos((FOV_DEG)*0.5 * PI_M / 180.0);              // 视场角度半值的cos值
+    HALF_FOV_COS = cos((FOV_DEG) * 0.5 * PI_M / 180.0);            // 视场角度半值的cos值
 
     _featsArray.reset(new pcl::PointCloud<PointType>()); // 特征点数组
 
@@ -2158,7 +2265,7 @@ int main(int argc, char **argv)
     fsmkdir(pcd_path);
     fsmkdir(scd_path);
     fsmkdir(log_path);
- 
+
     pgSaveStream = std::fstream(rootDir + "singlesession_posegraph.g2o", std::fstream::out);
 
     FILE *fp;
@@ -2166,10 +2273,10 @@ int main(int argc, char **argv)
     fp = fopen(pos_log_dir.c_str(), "w");
 
     ofstream fout_pre, fout_out, fout_dbg, fout_update_pose;
-    fout_pre.open(log_path+ "mat_pre.txt", ios::out);
+    fout_pre.open(log_path + "mat_pre.txt", ios::out);
     fout_out.open(log_path + "mat_out.txt", ios::out);
     fout_dbg.open(log_path + "dbg.txt", ios::out);
-    fout_update_pose.open(log_path + "update_pose.txt", ios::out);
+    fout_update_pose.open(log_path + "update_pose.csv", ios::out);
     if (fout_pre && fout_out)
         cout << "~~~~" << rootDir << " file opened" << endl;
     else
@@ -2181,13 +2288,14 @@ int main(int argc, char **argv)
     ros::Subscriber sub_pcl = p_pre->lidar_type == LIVOX ? (p_pre->livox_type == LIVOX_CUS ? nh.subscribe(lid_topic, 200000, livox_pcl_cbk) : nh.subscribe(repub_topic, 200000, livox_ros_cbk)) : nh.subscribe(lid_topic, 200000, standard_pcl_cbk);
     ros::Subscriber sub_imu = nh.subscribe(imu_topic, 200000, imu_cbk);
     // ros::Subscriber subLivoxMsg = nh.subscribe<livox_ros_driver::CustomMsg>(lid_topic, 100000, LivoxRepubCallback);
-    
-    if (camera_en){
+
+    if (camera_en)
+    {
         image_transport::ImageTransport it(nh);
         image_transport::Subscriber sub = it.subscribe(camera_topic, 1, &imageCallback);
         ros::Subscriber subBox = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/darknet_ros/bounding_boxes", 100, BoxCallback);
     }
-    
+
     ros::Publisher pubLaserCloudFull = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered", 100000);           // world系下稠密点云
     ros::Publisher pubLaserCloudColor = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered_color", 100000);    // world系下稠密彩色点云
     ros::Publisher pubLaserCloudFull_body = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered_body", 100000); // imu(body)系下稠密点云
@@ -2220,7 +2328,7 @@ int main(int argc, char **argv)
     // 中断处理函数,如果有中断信号(比如Ctrl+C),则执行第二个参数里面的SigHandle函数
     signal(SIGINT, SigHandle);
 
-    // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug); 
+    // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
 
     ros::Rate rate(5000);
     bool status = ros::ok();
@@ -2267,44 +2375,6 @@ int main(int argc, char **argv)
 
             feats_undistort_copy->points.clear();
             *feats_undistort_copy += *feats_undistort;
-
-            // // TODO: add dynamic remove here
-            // if(feats_undistort_copy->points.size() > 0){
-            //     Eigen::Vector4d q(msg_imu_pose.pose.orientation.x, msg_imu_pose.pose.orientation.y, msg_imu_pose.pose.orientation.z, msg_imu_pose.pose.orientation.w);
-            //     Eigen::Matrix3d R = quaternionToRotation(quaternionNormalize(q));
-            //     Eigen::Matrix<double, 3, 1> euler = RotMtoEuler(R);
-            //     PointTypePose pose_next;
-            //     pose_next.x = msg_imu_pose.pose.position.x;
-            //     pose_next.y = msg_imu_pose.pose.position.y;
-            //     pose_next.z = msg_imu_pose.pose.position.z;
-            //     pose_next.roll = euler(0, 0);
-            //     pose_next.pitch = euler(1, 0);
-            //     pose_next.yaw = euler(2, 0);
-
-            //     SSC ssc_next(feats_undistort, 0);
-            //     remover.cluster(ssc_next.apri_vec, ssc_next.hash_cloud, ssc_next.cluster_vox);
-            //     remover.recognizePD(ssc_next);
-
-            //     Eigen::Vector4d q_copy(geoQuat.x, geoQuat.y, geoQuat.z, geoQuat.w);
-            //     Eigen::Matrix3d R_copy = quaternionToRotation(quaternionNormalize(q_copy));
-            //     Eigen::Matrix<double, 3, 1> euler_copy = RotMtoEuler(R_copy);
-            //     PointTypePose pose_pre;
-            //     pose_pre.x = pos_lid_copy(0);
-            //     pose_pre.y = pos_lid_copy(1);
-            //     pose_pre.z = pos_lid_copy(2);
-            //     pose_pre.roll = euler_copy(0, 0);
-            //     pose_pre.pitch = euler_copy(1, 0);
-            //     pose_pre.yaw = euler_copy(2, 0);
-
-            //     SSC ssc_pre(feats_undistort_copy, 0);
-            //     remover.cluster(ssc_pre.apri_vec, ssc_pre.hash_cloud, ssc_pre.cluster_vox);
-            //     remover.recognizePD(ssc_pre);
-
-            //     remover.trackPD(ssc_pre, pose_pre, ssc_next, pose_next);
-
-            //     feats_undistort->points.clear();
-            //     *feats_undistort += *ssc_next.cloud_nd;
-            // }
 
             // 如果去畸变点云数据为空,则代表了激光雷达没有完成去畸变,此时还不能初始化成功
             if (feats_undistort->empty() || (feats_undistort == NULL))
@@ -2382,7 +2452,7 @@ int main(int argc, char **argv)
             euler_cur = SO3ToEuler(state_point.rot);
             pos_lid = state_point.pos + state_point.rot * state_point.offset_T_L_I; // world系下L坐标
             pos_lid_copy = pos_lid;
-            geoQuat.x = state_point.rot.coeffs()[0];                                // world系下当前IMU的姿态四元数
+            geoQuat.x = state_point.rot.coeffs()[0]; // world系下当前IMU的姿态四元数
             geoQuat.y = state_point.rot.coeffs()[1];
             geoQuat.z = state_point.rot.coeffs()[2];
             geoQuat.w = state_point.rot.coeffs()[3];
@@ -2465,12 +2535,14 @@ int main(int argc, char **argv)
     /**************** data saver runs when programe is closing ****************/
     std::cout << "**************** data saver runs when programe is closing ****************" << std::endl;
 
-    if(! ((surfCloudKeyFrames.size() == cloudKeyPoses3D->points.size()) && (cloudKeyPoses3D->points.size() == cloudKeyPoses6D->points.size()))){
+    if (!((surfCloudKeyFrames.size() == cloudKeyPoses3D->points.size()) && (cloudKeyPoses3D->points.size() == cloudKeyPoses6D->points.size())))
+    {
         std::cout << surfCloudKeyFrames.size() << " " << cloudKeyPoses3D->points.size() << " " << cloudKeyPoses6D->points.size() << std::endl;
         std::cout << " the condition --surfCloudKeyFrames.size() == cloudKeyPoses3D->points.size() == cloudKeyPoses6D->points.size()-- is not satisfied" << std::endl;
         ros::shutdown();
     }
-    else{
+    else
+    {
         std::cout << "the num of total keyframe is " << surfCloudKeyFrames.size() << std::endl;
     }
 
@@ -2483,8 +2555,8 @@ int main(int argc, char **argv)
         string all_points_dir(rootDir + file_name);
         pcl::PCDWriter pcd_writer;
         cout << "current scan saved to PCD/" << file_name << endl;
-        pcl::VoxelGrid<PointType> downSizeFilterGlobalMapKeyFrames;   
-        downSizeFilterGlobalMapKeyFrames.setLeafSize(0.2, 0.2, 0.2); 
+        pcl::VoxelGrid<PointType> downSizeFilterGlobalMapKeyFrames;
+        downSizeFilterGlobalMapKeyFrames.setLeafSize(0.2, 0.2, 0.2);
         downSizeFilterGlobalMapKeyFrames.setInputCloud(pcl_wait_save);
         downSizeFilterGlobalMapKeyFrames.filter(*pcl_wait_save);
         pcl::io::savePCDFileASCII(all_points_dir, *pcl_wait_save);
@@ -2492,37 +2564,42 @@ int main(int argc, char **argv)
     }
 
     // save sc and keyframe
-     // - SINGLE_SCAN_FULL: using downsampled original point cloud (/full_cloud_projected + downsampling)
+    // - SINGLE_SCAN_FULL: using downsampled original point cloud (/full_cloud_projected + downsampling)
     // - MULTI_SCAN_FEAT: using NearKeyframes (because a MulRan scan does not have beyond region, so to solve this issue ... )
     const SCInputType sc_input_type = SCInputType::SINGLE_SCAN_FULL; // TODO: change this in ymal
     bool soMany = false;
     std::cout << "save sc and keyframe" << std::endl;
 
-    for (size_t i = 0; i < cloudKeyPoses6D->size(); i++){
+    for (size_t i = 0; i < cloudKeyPoses6D->size(); i++)
+    {
         pcl::PointCloud<PointType>::Ptr save_cloud(new pcl::PointCloud<PointType>());
-        if( sc_input_type == SCInputType::SINGLE_SCAN_FULL ) {
-            pcl::copyPointCloud(*surfCloudKeyFrames[i],  *save_cloud);
+        if (sc_input_type == SCInputType::SINGLE_SCAN_FULL)
+        {
+            pcl::copyPointCloud(*surfCloudKeyFrames[i], *save_cloud);
             scLoop.makeAndSaveScancontextAndKeys(*save_cloud);
-        }  
-        else if (sc_input_type == SCInputType::MULTI_SCAN_FEAT) { 
+        }
+        else if (sc_input_type == SCInputType::MULTI_SCAN_FEAT)
+        {
             pcl::PointCloud<PointType>::Ptr multiKeyFrameFeatureCloud(new pcl::PointCloud<PointType>());
             loopFindNearKeyframes(multiKeyFrameFeatureCloud, i, historyKeyframeSearchNum);
-            if(soMany){
+            if (soMany)
+            {
                 // *save_cloud += *multiKeyFrameFeatureCloud;
-                pcl::copyPointCloud(*multiKeyFrameFeatureCloud,  *save_cloud);
+                pcl::copyPointCloud(*multiKeyFrameFeatureCloud, *save_cloud);
             }
-            else{
+            else
+            {
                 // *save_cloud += *surfCloudKeyFrames[i];
-                pcl::copyPointCloud(*surfCloudKeyFrames[i],  *save_cloud);
+                pcl::copyPointCloud(*surfCloudKeyFrames[i], *save_cloud);
             }
-            scLoop.makeAndSaveScancontextAndKeys(*save_cloud); 
+            scLoop.makeAndSaveScancontextAndKeys(*save_cloud);
         }
 
         // save sc data
-        const auto& curr_scd = scLoop.getConstRefRecentSCD();
+        const auto &curr_scd = scLoop.getConstRefRecentSCD();
         std::string curr_scd_node_idx = padZeros(scLoop.polarcontexts_.size() - 1);
 
-        writeSCD(scd_path  + curr_scd_node_idx + ".scd", curr_scd);
+        writeSCD(scd_path + curr_scd_node_idx + ".scd", curr_scd);
 
         string all_points_dir(pcd_path + string(curr_scd_node_idx) + ".pcd");
         save_cloud->width = save_cloud->points.size();
@@ -2537,19 +2614,20 @@ int main(int argc, char **argv)
     string trans_dir(rootDir + "transformations.pcd");
     pcl::io::savePCDFileASCII(trans_dir, *cloudKeyPoses6D);
 
-    // save pose graph 
-    cout << "****************************************************" << endl; 
-    cout << "Saving  posegraph" << endl; 
+    // save pose graph
+    cout << "****************************************************" << endl;
+    cout << "Saving  posegraph" << endl;
 
-    for(auto& _line: vertices_str)
+    for (auto &_line : vertices_str)
         pgSaveStream << _line << std::endl;
-    for(auto& _line: edges_str)
+    for (auto &_line : edges_str)
         pgSaveStream << _line << std::endl;
 
-    for(auto& po : update_nokf_poses){
-        WriteText(fout_update_pose, po);
+    for (auto &_po : update_nokf_poses)
+    {
+        WriteTextV2(fout_update_pose, _po);
     }
-    
+
     fout_update_pose.close();
     pgSaveStream.close();
 

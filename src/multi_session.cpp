@@ -12,7 +12,7 @@ bool keyFrameSort(const std::pair<int, KeyFrame>& frame1, const std::pair<int, K
 }
 
 int main(int argc, char** argv){
-    ros::init(argc, argv, "multi-session");
+    ros::init(argc, argv, "multi_session");
     ros::NodeHandle nh;
 
     nh.param<std::string>("multi_session/sessions_dir", sessions_dir, " ");

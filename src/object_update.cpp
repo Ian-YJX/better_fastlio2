@@ -198,10 +198,10 @@ int main(int argc, char** argv){
     pose_ext.pitch = euler_r(1, 0);
     pose_ext.yaw = euler_r(2, 0);
 
-    std::string prior_path = "/home/yixin-f/fast-lio2/src/parkinglot/05/PCDs";
-    std::string prior_pose = "/home/yixin-f/fast-lio2/src/parkinglot/0105/aft_tansformation2.pcd";
-    std::string cur_path = "/home/yixin-f/fast-lio2/src/parkinglot/06/PCDs";
-    std::string cur_pose = "/home/yixin-f/fast-lio2/src/parkinglot/0106/aft_tansformation2.pcd";
+    std::string prior_path = "/home/catkin_ws/parkinglot/05/PCDs";
+    std::string prior_pose = "/home/catkin_ws/parkinglot/0105/aft_tansformation2.pcd";
+    std::string cur_path = "/home/catkin_ws/parkinglot/06/PCDs";
+    std::string cur_pose = "/home/catkin_ws/parkinglot/0106/aft_tansformation2.pcd";
 
     pcl::PointCloud<PointTypePose>::Ptr pri_pose(new pcl::PointCloud<PointTypePose>());
     pcl::PointCloud<PointTypePose>::Ptr aft_pose(new pcl::PointCloud<PointTypePose>());
@@ -387,8 +387,8 @@ int main(int argc, char** argv){
     cur_select->width = cur_select->points.size();
     prior_select->height = 1;
     prior_select->width = prior_select->points.size();
-    pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/cur_map_select.pcd", *cur_select);
-    pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/prior_map_select.pcd", *prior_select);
+    pcl::io::savePCDFile("/home/catkin_ws/data_dy/cur_map_select.pcd", *cur_select);
+    pcl::io::savePCDFile("/home/catkin_ws/data_dy/prior_map_select.pcd", *prior_select);
     // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/prior_g.pcd", *g_detect2);
     // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/cur_g.pcd", *g_detect1);
 
@@ -413,13 +413,13 @@ int main(int argc, char** argv){
     result->width = result->points.size();
     use->height = 1;
     use->width = use->points.size();
-    pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/result.pcd", *result);
-    pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/use.pcd", *use);
+    pcl::io::savePCDFile("/home/catkin_ws/data_dy/result.pcd", *result);
+    pcl::io::savePCDFile("/home/catkin_ws/data_dy/use.pcd", *use);
 
-    pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/cur_map_ext2.pcd", *cur_map);
+    pcl::io::savePCDFile("/home/catkin_ws/data_dy/cur_map_ext2.pcd", *cur_map);
     // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/prior_map.pcd", *prior_map);
     // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/prior_map_ext.pcd", *prior_map_ext);
-    pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/prior_map_ext2.pcd", *prior_map_ext2);
+    pcl::io::savePCDFile("/home/catkin_ws/data_dy/prior_map_ext2.pcd", *prior_map_ext2);
     // TODO: a good demo to use the multi-session and segmentation result !! 
 
     // // TODO: object-level fusion and update

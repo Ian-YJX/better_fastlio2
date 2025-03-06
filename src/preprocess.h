@@ -7,11 +7,12 @@ using namespace std;
 
 enum LID_TYPE
 {
-  LIVOX = 1, 
-  VELO16, 
+  LIVOX = 1,
+  VELO16,
   OUST64,
-  RS
-}; //{1, 2, 3, 4}
+  RS,
+  HESAI
+}; //{1, 2, 3, 4, 5}
 
 enum LIVOX_TYPE
 {
@@ -21,9 +22,9 @@ enum LIVOX_TYPE
 
 enum TIME_UNIT
 {
-  SEC = 0, 
-  MS = 1, 
-  US = 2, 
+  SEC = 0,
+  MS = 1,
+  US = 2,
   NS = 3
 };
 
@@ -88,44 +89,50 @@ namespace livox_ros
 }
 // 注册livox_ros的Point类型
 POINT_CLOUD_REGISTER_POINT_STRUCT(livox_ros::Point,
-                                  (float, x, x)(float, y, y)(float, z, z)
-                                  (float, intensity, intensity)(std::uint8_t, tag, tag)(std::uint8_t, line, line)(std::uint8_t, reflectivity, reflectivity)(std::uint32_t, offset_time, offset_time)(float, rgb, rgb))
+                                  (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(std::uint8_t, tag, tag)(std::uint8_t, line, line)(std::uint8_t, reflectivity, reflectivity)(std::uint32_t, offset_time, offset_time)(float, rgb, rgb))
 
 namespace velodyne_ros
 {
+  // struct EIGEN_ALIGN16 Point
+  // {
+  //   PCL_ADD_POINT4D;                // 4D点坐标类型,xyz+padding,float padding用于填补位数,以满足存储对齐要求
+  //   float intensity;                // 强度
+  //   float timestamp;                     // 时间
+  //   uint16_t ring;                  // 线束
+  //   EIGEN_MAKE_ALIGNED_OPERATOR_NEW // 进行内存对齐
+  // };
+
   struct EIGEN_ALIGN16 Point
   {
-    PCL_ADD_POINT4D;                // 4D点坐标类型,xyz+padding,float padding用于填补位数,以满足存储对齐要求
+    PCL_ADD_POINT4D;                // 4D点坐标类型, xyz + padding，float padding 用于填补位数，以满足存储对齐要求
     float intensity;                // 强度
-    float time;                     // 时间
     uint16_t ring;                  // 线束
+    double timestamp;               // 时间戳，使用 double 类型对应 FLOAT64 数据类型
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // 进行内存对齐
   };
+
 }
 POINT_CLOUD_REGISTER_POINT_STRUCT(velodyne_ros::Point,
-                                  (float, x, x)(float, y, y)(float, z, z)
-                                  (float, intensity, intensity)(float, time, time)(std::uint16_t, ring, ring))
+                                  (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(std::uint16_t, ring, ring)(float, timestamp, timestamp))
 
-namespace ouster_ros 
+namespace ouster_ros
 {
   struct EIGEN_ALIGN16 Point
   {
-      PCL_ADD_POINT4D;
-      float intensity;
-      uint32_t t;
-      uint16_t reflectivity;
-      uint8_t  ring;
-      uint16_t ambient;
-      uint32_t range;
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    PCL_ADD_POINT4D;
+    float intensity;
+    uint32_t t;
+    uint16_t reflectivity;
+    uint8_t ring;
+    uint16_t ambient;
+    uint32_t range;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
-}  // namespace ouster_ros
+} // namespace ouster_ros
 POINT_CLOUD_REGISTER_POINT_STRUCT(ouster_ros::Point,
-    (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)
-    // use std::uint32_t to avoid conflicting with pcl::uint32_t
-    (std::uint32_t, t, t)(std::uint16_t, reflectivity, reflectivity)(std::uint8_t, ring, ring)
-    (std::uint16_t, ambient, ambient)(std::uint32_t, range, range)
-)
+                                  (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)
+                                  // use std::uint32_t to avoid conflicting with pcl::uint32_t
+                                  (std::uint32_t, t, t)(std::uint16_t, reflectivity, reflectivity)(std::uint8_t, ring, ring)(std::uint16_t, ambient, ambient)(std::uint32_t, range, range))
 
 namespace rslidar_ros
 {
@@ -139,8 +146,29 @@ namespace rslidar_ros
   };
 } // namespace rslidar_ros
 POINT_CLOUD_REGISTER_POINT_STRUCT(rslidar_ros::Point,
-                                  (float, x, x)(float, y, y)(float, z, z)
-                                  (float, intensity, curvature)(float, time, normal_x)(uint16_t, ring, ring))
+                                  (float, x, x)(float, y, y)(float, z, z)(float, intensity, curvature)(float, time, normal_x)(std::uint16_t, ring, ring))
+
+namespace hesai_ros
+{
+  struct EIGEN_ALIGN16 Point
+  {
+    PCL_ADD_POINT4D;                // PCL 预定义的四维点结构宏
+    float intensity;                // 反射强度
+    //double timestamp;               // 时间戳（改为 double 类型，精度更高）
+    uint16_t ring;                  // 线束编号
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // 使得点云内存对齐
+  };
+}
+
+// 注册点类型并根据 PointCloud2 中的字段偏移量修改
+POINT_CLOUD_REGISTER_POINT_STRUCT(hesai_ros::Point,
+                                  (float, x, x)                   // x 坐标
+                                  (float, y, y)                   // y 坐标
+                                  (float, z, z)                   // z 坐标
+                                  (float, intensity, intensity)   // 反射强度
+                                  (std::uint16_t, ring, ring)     // 线束编号
+                                  //(double, timestamp, timestamp)
+                                ) // 时间戳字段，保持为 double 类型
 
 /**
  * @brief Preproscess类:用于对激光雷达点云数据进行预处理
@@ -160,21 +188,22 @@ public:
   void process(const sensor_msgs::PointCloud2::ConstPtr &msg, pcl::PointCloud<PointType>::Ptr &pcl_out);
   void set(bool feat_en, int lid_type, double bld, int pfilt_num);
 
-  pcl::PointCloud<PointType> pl_full, pl_corn, pl_surf;                         // 全部点、边缘点、平面点
-  pcl::PointCloud<PointType> pl_buff[128];                                      // maximum 128 line lidar
-  vector<orgtype> typess[128];                                      // maximum 128 line lidar
+  pcl::PointCloud<PointType> pl_full, pl_corn, pl_surf; // 全部点、边缘点、平面点
+  pcl::PointCloud<PointType> pl_buff[128];              // maximum 128 line lidar
+  vector<orgtype> typess[128];                          // maximum 128 line lidar
   float time_unit_scale;
   int lidar_type, livox_type, point_filter_num, N_SCANS, SCAN_RATE, time_unit; // 雷达类型、livox数据类型,采样间隔、扫描线数、扫描频率
-  double blind;                                                     // 最小距离阈值(盲区),小于此阈值不计算特征
-  bool feature_enabled, given_offset_time;                          // 是否进行特征提取、是否进行时间偏移
+  double blind;                                                                // 最小距离阈值(盲区),小于此阈值不计算特征
+  bool feature_enabled, given_offset_time;                                     // 是否进行特征提取、是否进行时间偏移
   ros::Publisher pub_full, pub_surf, pub_corn;
 
 private:
   void livox_handler(const livox_ros_driver::CustomMsg::ConstPtr &msg); // 用于对Livox激光雷达数据进行处理
-  void livoxros_handler(const sensor_msgs::PointCloud2::ConstPtr &msg); 
+  void livoxros_handler(const sensor_msgs::PointCloud2::ConstPtr &msg);
   void velodyne_handler(const sensor_msgs::PointCloud2::ConstPtr &msg); // 用于对velodyne激光雷达数据进行处理
   void oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg);
-  void give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &types);        // 当前扫描线点云，扫描点属性
+  void hesai_handler(const sensor_msgs::PointCloud2::ConstPtr &msg);
+  void give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &types); // 当前扫描线点云，扫描点属性
   void pub_func(pcl::PointCloud<PointType> &pl, const ros::Time &ct);
   int plane_judge(const pcl::PointCloud<PointType> &pl, vector<orgtype> &types, uint i, uint &i_nex, Eigen::Vector3d &curr_direct);
   bool small_plane(const pcl::PointCloud<PointType> &pl, vector<orgtype> &types, uint i_cur, uint &i_nex, Eigen::Vector3d &curr_direct);

@@ -363,10 +363,10 @@ void MultiSession::IncreMapping::run( int iteration ){
 
     writeAllSessionsTrajectories(std::string("aft_intersession_loops"));
 
-    std::string aftPose1 = sessions_dir_ + save_directory_ + "aft_tansformation1.pcd";
+    std::string aftPose1 = sessions_dir_ + save_directory_ + "aft_transformation1.pcd";
     pcl::io::savePCDFileASCII(aftPose1, *sessions_.at(target_sess_idx).cloudKeyPoses6D);
 
-    std::string aftPose2 = sessions_dir_ + save_directory_ + "aft_tansformation2.pcd";
+    std::string aftPose2 = sessions_dir_ + save_directory_ + "aft_transformation2.pcd";
     pcl::io::savePCDFileASCII(aftPose2, *sessions_.at(source_sess_idx).cloudKeyPoses6D);
 
     getReloKeyFrames();  // get relo clouds
