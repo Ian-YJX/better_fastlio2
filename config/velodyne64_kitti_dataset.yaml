@@ -80,7 +80,7 @@ globalMapVisualizationLeafSize: 1.0           # meters, global map visualization
 visulize_IkdtreeMap: true
 
 # visual iktree_map  
-recontructKdTree: true
+reconstructKdTree: true
 
 # Export settings
 savePCD: true                         # https://github.com/TixiaoShan/LIO-SAM/issues/3

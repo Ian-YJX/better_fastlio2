@@ -471,8 +471,6 @@ std::experimental::optional<gtsam::Pose3> MultiSession::IncreMapping::doICPVirtu
     KeyFrame targetKeyframe;
     cureKeyframe.all_cloud = cureKeyframeCloud;
     targetKeyframe.all_cloud = targetKeyframeCloud;
-
-    int base_key = 0; // its okay. (using the origin for sc loops' co-base) 
     int historyKeyframeSearchNum = 2; // TODO move to yaml 
 
     source_sess.loopFindNearKeyframesLocalCoord(cureKeyframe, loop_idx_source_session, 0);
@@ -533,8 +531,6 @@ std::experimental::optional<gtsam::Pose3> MultiSession::IncreMapping::doICPGloba
     KeyFrame targetKeyframe;
     cureKeyframe.all_cloud = cureKeyframeCloud;
     targetKeyframe.all_cloud = targetKeyframeCloud;
-
-    int base_key = 0; // its okay. (using the origin for sc loops' co-base) 
     int historyKeyframeSearchNum = 2; // TODO move to yaml 
 
     source_sess.loopFindNearKeyframesCentralCoord(cureKeyframe, loop_idx_source_session, 0);
@@ -635,9 +631,6 @@ void MultiSession::IncreMapping::addAllSessionsToGraph(){
 std::vector<std::pair<int, int>> MultiSession::IncreMapping::equisampleElements(
     const std::vector<std::pair<int, int>>& _input_pair, float _gap, int _num_sampled){
     std::vector<std::pair<int, int>> sc_loop_idx_pairs_sampled;
-
-    int equisampling_counter { 0 }; 
-
     std::vector<int> equisampled_idx;
     for (int i=0; i<_num_sampled; i++)
         equisampled_idx.emplace_back(std::round(float(i) * _gap));

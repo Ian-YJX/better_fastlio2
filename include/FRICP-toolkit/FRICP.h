@@ -435,7 +435,6 @@ public:
             nu1 = nu1>nu2? nu1:nu2;
         }
         double end_init = omp_get_wtime();
-        double init_time = end_init - begin_init;
 
         //AA init
         accelerator_.init(par.anderson_m, (N + 1) * (N + 1), LogMatrix(T.matrix()).data());

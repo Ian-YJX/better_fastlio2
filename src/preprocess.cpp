@@ -111,7 +111,6 @@ void Preprocess::livox_handler(const livox_ros_driver::CustomMsg::ConstPtr &msg)
   pl_surf.clear();
   pl_corn.clear();
   pl_full.clear();
-  double t1 = omp_get_wtime();
   int plsize = msg->point_num; // 一帧点云中的点数
 
   // 分配空间
@@ -131,7 +130,7 @@ void Preprocess::livox_handler(const livox_ros_driver::CustomMsg::ConstPtr &msg)
   if (feature_enabled)
   {
     // 按照line划分点云
-    for (uint i = 1; i < plsize; i++)
+    for (uint i = 1; i < (int) plsize; i++)
     {
       if ((msg->points[i].line < N_SCANS) && ((msg->points[i].tag & 0x30) == 0x10 || (msg->points[i].tag & 0x30) == 0x00))
       {
@@ -140,8 +139,6 @@ void Preprocess::livox_handler(const livox_ros_driver::CustomMsg::ConstPtr &msg)
         pl_full[i].z = msg->points[i].z;
         pl_full[i].intensity = msg->points[i].reflectivity;
         pl_full[i].curvature = msg->points[i].offset_time / float(1000000); // use curvature as time of each laser points
-
-        bool is_new = false;
         // 与前一点间距太小则忽略该点，间距太小不利于特征提取
         if ((abs(pl_full[i].x - pl_full[i - 1].x) > 1e-7) || (abs(pl_full[i].y - pl_full[i - 1].y) > 1e-7) || (abs(pl_full[i].z - pl_full[i - 1].z) > 1e-7))
         {
@@ -274,7 +271,6 @@ void Preprocess::oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
   }
   else
   {
-    double time_stamp = msg->header.stamp.toSec();
     // cout << "===================================" << endl;
     // printf("Pt size = %d, N_SCANS = %d\r\n", plsize, N_SCANS);
     for (int i = 0; i < pl_orig.points.size(); i++)

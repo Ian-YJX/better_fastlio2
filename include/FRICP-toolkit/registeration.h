@@ -72,7 +72,6 @@ public:
         std::cout << "execute registration -> ";
         FRICP<3> fricp;
         double begin_reg = omp_get_wtime();
-        double converge_rmse = 0;
         switch(method)
         {
             case ICP:

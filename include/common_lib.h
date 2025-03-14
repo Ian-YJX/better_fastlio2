@@ -818,7 +818,7 @@ void floor(T1 &a, T2 b)
 std::vector<std::pair<double, int>> sortVecWithIdx(const std::vector<double> &arr)
 {
     std::vector<std::pair<double, int>> vp;
-    for (int i = 0; i < arr.size(); ++i)
+    for (int i = 0; i < (int)arr.size(); ++i)
         vp.push_back(std::make_pair(arr[i], i));
 
     std::sort(vp.begin(), vp.end(), std::greater<>());

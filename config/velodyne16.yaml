@@ -1,6 +1,6 @@
 common:
-    lid_topic:  "/velodyne_points"
-    imu_topic:  "/imu/data"
+    lid_topic:  "/lidar_points"
+    imu_topic:  "/vaectornav/IMU"
     camera_topic: "/usb_cam/image_raw"
     time_sync_en: false         # ONLY turn on when external time synchronization is really not possible
 
@@ -58,7 +58,7 @@ mapping:
 
 ikdtree:
     max_iteration: 3
-    recontructKdTree: false  # if path is too large, the rviz will crash, but default is false
+    reconstructKdTree: false  # if path is too large, the rviz will crash, but default is false
     kd_step: 30
     filter_size_map_min: 0.2
 

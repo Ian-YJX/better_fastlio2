@@ -1,4 +1,4 @@
-// multi-session writted by @Yixin Fang, refering LT-Mapper
+// multi-session written by @Yixin Fang, refering LT-Mapper
 
 #pragma once
 

@@ -1,7 +1,7 @@
 common:
     lid_topic:  "/lidar_points"
     imu_topic:  "/vectornav/IMU"
-    camera_topic: "/usb_cam/image_raw"
+    camera_topic: "/camera/color/image_raw/compressed"
     time_sync_en: false         # ONLY turn on when external time synchronization is really not possible
 
     rootDir: "/home/ian/catkin_ws/data_lio/"
@@ -15,8 +15,7 @@ common:
     pcd_save_interval: 1                 # how many LiDAR frames saved in each pcd
     
 preprocess:
-    lidar_type: 5                # 1 for Livox serials LiDAR, 2 for Velodyne LiDAR
-    livox_type: 1                # 1 for LIVOX_CUS
+    lidar_type: 5                # 1 for Livox serials LiDAR, 2 for Velodyne LiDAR, 5 for Hesai
     scan_line:  32
     blind: 2
     feature_enabled: 0  # bool
@@ -30,9 +29,12 @@ camera:
                        0.000000, 0.000000, -1.000000, 0.300000,
                        1.000000, 0.000000, 0.000000, 0.000000,
                        0.000000, 0.000000, 0.000000, 1.000000]        #相机2雷达外参
-    camera_internal: [516.235840, 0.000000, 641.125888, 0.000000,
-                      0.000000, 533.185608, 338.725370, 0.000000,
-                      0.000000, 0.000000, 1.000000, 0.000000]         #相机内参
+    camera_internal: [ 637.071716,   0.000000, 644.188721, 0.000000,
+                         0.000000, 636.349304, 367.441864, 0.000000,
+                         0.000000,   0.000000,   1.000000, 0.000000]
+    # [516.235840, 0.000000, 641.125888, 0.000000,
+    #                   0.000000, 533.185608, 338.725370, 0.000000,
+    #                   0.000000, 0.000000, 1.000000, 0.000000]         #相机内参
 
 mapping:
     acc_cov: 0.1
@@ -46,32 +48,29 @@ mapping:
     mappingSurfLeafSize: 0.2
     keyframeAddingDistThreshold: 1.0
     keyframeAddingAngleThreshold: 0.2
-    # extrinsic_T: [ 0.031, -0.10, 0.11]  # seu
-    # extrinsic_R: [ 0.9994142, 0.03275957, 0.00990251,
-    #               -0.03266505,  0.99942062, -0.00956125,
-    #               -0.01021,  0.00923218,  0.99990526]
     extrinsic_T: [ -0.026102, 0.038266, -0.297789]  # 本次使用
     extrinsic_R: [ 0.999610, 0.027142, 0.006595,
                   0.027188, -0.999606, -0.006972,
                  0.006403, 0.007149, -0.999954]
-    # extrinsic_T: [ 0.071, -0.053, 0.097 ] # zhongyifeng
-    # extrinsic_R: [ 0.9935, -0.0140, -0.1128,
-    #                0.0137, 0.9999, -0.0040,
-    #                0.1128, 0.0024, 0.9936]
-
+    # extrinsic_T: [ 0.031, -0.10, 0.11]  # seu
+    # extrinsic_R: [ 0.9994142, 0.03275957, 0.00990251,
+    #               -0.03266505,  0.99942062, -0.00956125,
+    #               -0.01021,  0.00923218,  0.99990526]
 ikdtree:
     max_iteration: 3
-    recontructKdTree: false  # if path is too large, the rviz will crash, but default is false
+    reconstructKdTree: false  # if path is too large, the rviz will crash, but default is false
     kd_step: 30
     filter_size_map_min: 0.2
 
 loop:
-    loopClosureEnableFlag: false
-    loopClosureFrequency: 1.0
-    historyKeyframeSearchRadius: 10.0
-    historyKeyframeSearchTimeDiff: 30.0
-    historyKeyframeSearchNum: 2
-    historyKeyframeFitnessScore: 0.2
+    loopClosureEnableFlag: false   # 开启回环检测
+    loopClosureFrequency: 1.0     # 维持 1Hz，实时性足够
+
+    historyKeyframeSearchRadius: 5.0  # 🔹【减少搜索半径】 室内环境建议 3.0~5.0，避免错误匹配
+    historyKeyframeSearchTimeDiff: 10.0  # 🔹【降低时间差】 室内回环较短时间即可发生
+
+    historyKeyframeSearchNum: 5  # 🔹【增加匹配候选帧】 避免仅靠 2 帧误匹配，提高回环检测稳定性
+    historyKeyframeFitnessScore: 0.1  # 🔹【放宽ICP匹配阈值】 允许回环匹配时稍大误差，提高回环成功率
 
 segment:
     ground_en: false
@@ -83,7 +82,7 @@ segment:
 publish:
     path_en:  true
     scan_publish_en:  true       # false: close all the point cloud output
-    dense_publish_en: false       # false: low down the points number in a global-frame point clouds scan.
+    dense_publish_en: true       # false: low down the points number in a global-frame point clouds scan.
     scan_bodyframe_pub_en: true  # true: output the point cloud scans in IMU-body-frame
 
 visualization:
@@ -91,3 +90,4 @@ visualization:
     globalMapVisualizationPoseDensity: 0.5
     globalMapVisualizationLeafSize: 0.2
     visulize_IkdtreeMap: true
+

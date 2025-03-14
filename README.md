@@ -109,7 +109,7 @@ For other application, you need to first check the Config/*.yaml about the setti
 | extrinsic_T | 雷达到IMU平移外参 | - |
 | extrinsic_R | 雷达到IMU旋转外参 | - |
 | max_iteration | ESEKF最大迭代次数 | 3 |
-| recontructKdTree | 是否重建i-kdtree | false |
+| reconstructKdTree | 是否重建i-kdtree | false |
 | kd_step | i-kdtree重建步长 | 50 |
 | filter_size_map_min | i-kdtree下采样分辨率(m) | 0.2 |
 | loopClosureEnableFlag | 是否开启回环检测 | false |
@@ -152,7 +152,7 @@ Note that if you wanna use the dynamic removal module, you have to make the "src
 | [saveFrame](./src/laserMapping.cpp#L525) | 保存关键帧 |
 | [addOdomFactor](./src/laserMapping.cpp#L550) | 添加激光里程计因子 |
 | [addLoopFactor](./src/laserMapping.cpp#L584) | 添加回环因子 |
-| [recontructIKdTree](./src/laserMapping.cpp#L612) | i-kdtree重建 |
+| [reconstructIKdTree](./src/laserMapping.cpp#L612) | i-kdtree重建 |
 | [saveKeyFramesAndFactor](./src/laserMapping.cpp#L680) | [关键帧保存、因子添加和因子图优化主函数]() |
 | [correctPoses](./src/laserMapping.cpp#L769) | 更新优化后的位姿 |
 | [detectLoopClosureDistance](./src/laserMapping.cpp#L815) | 回环检测--近邻搜索 |
@@ -425,7 +425,7 @@ You also need to first check the Config/online_relocalization.yaml, we list para
 | extrinsic_R | 雷达到IMU旋转外参 | - |
 |  |  |  |
 
-The data structure in "priorDir" is similar to the result of lio mapping. Please do not open i-kdtree recontruction, loop closure detection or dynamic removal during online relocalization. You can set the manual pose in rviz by button [2D Pose Estimation](). You can finally get the relocalization poses.txt and time.txt.
+The data structure in "priorDir" is similar to the result of lio mapping. Please do not open i-kdtree reconstruction, loop closure detection or dynamic removal during online relocalization. You can set the manual pose in rviz by button [2D Pose Estimation](). You can finally get the relocalization poses.txt and time.txt.
 
 1) Here we list some important functions in include/online-relo/pose_estimator.cpp as follows:
 
