@@ -153,8 +153,8 @@ void TGRS::trackPD(SSC& ssc_pre, PointTypePose* pose_pre, SSC& ssc_next, PointTy
     Eigen::Affine3f trans_n2p = trans_pre.inverse() * trans_next;
     pcl::PointCloud<PointType>::Ptr voxCloud_nextTrans(new pcl::PointCloud<PointType>());
     transformPointCloud(voxCloud_next, trans_n2p, voxCloud_nextTrans);
-    // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/vox_next.pcd", *voxCloud_next);
-    // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/vox_pre.pcd", *voxCloud_pre);
+    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/vox_next.pcd", *voxCloud_next);
+    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/vox_pre.pcd", *voxCloud_pre);
 
     // Step 3: PD projection (tracking)
     for(auto& pd : ssc_next.PD_cluster){

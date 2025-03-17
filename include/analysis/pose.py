@@ -5,7 +5,7 @@
 # import math
 
 # gt_poses = []
-# with open('/home/yixin-f/fast-lio2/src/Mulran/river01/poses.txt', 'r') as f:
+# with open('/home/ian/catkin_ws/Mulran/river01/poses.txt', 'r') as f:
 #     lines = f.readlines()
 #     for line in lines:
 #             elements = line.strip().split()
@@ -43,7 +43,7 @@
 #       gt_zr.append(rot_pt[2])
 
 # lio_poses = []
-# with open('/home/yixin-f/fast-lio2/src/Mulran/river01/lio.txt', 'r') as f:
+# with open('/home/ian/catkin_ws/Mulran/river01/lio.txt', 'r') as f:
 #     lines = f.readlines()
 #     for line in lines:
 #             elements = line.strip().split()
@@ -64,7 +64,7 @@
 # print(len(lio_y))
 
 # gtsam_poses = []
-# with open('/home/yixin-f/fast-lio2/src/Mulran/river01/gtsam.txt', 'r') as f:
+# with open('/home/ian/catkin_ws/Mulran/river01/gtsam.txt', 'r') as f:
 #     lines = f.readlines()
 #     for line in lines:
 #             elements = line.strip().split()
@@ -85,7 +85,7 @@
 # print(len(gtsam_x))
 
 # tgrs_poses = []
-# with open('/home/yixin-f/fast-lio2/src/Mulran/river01/tgrs.txt', 'r') as f:
+# with open('/home/ian/catkin_ws/Mulran/river01/tgrs.txt', 'r') as f:
 #     lines = f.readlines()
 #     for line in lines:
 #             elements = line.strip().split()
@@ -124,7 +124,7 @@ import matplotlib.pyplot as plt
 import math
 
 gt_poses = []
-with open('/home/yixin-f/fast-lio2/src/parkinglot/02/relo_gt.txt', 'r') as f:
+with open('/home/ian/catkin_ws/parkinglot/02/relo_gt.txt', 'r') as f:
     lines = f.readlines()
     for line in lines:
             elements = line.strip().split()
@@ -145,7 +145,7 @@ for it in gt_poses:
 print(len(gt_x))
 
 lio_poses = []
-with open('/home/yixin-f/fast-lio2/src/seu/school/robustliorelo_pose.txt', 'r') as f:
+with open('/home/ian/catkin_ws/seu/school/robustliorelo_pose.txt', 'r') as f:
     lines = f.readlines()
     for line in lines:
             elements = line.strip().split()
@@ -166,7 +166,7 @@ for it in lio_poses:
 print(len(lio_y))
 
 gtsam_poses = []
-with open('/home/yixin-f/fast-lio2/src/seu/school/robustliorelo_pose.txt', 'r') as f:
+with open('/home/ian/catkin_ws/seu/school/robustliorelo_pose.txt', 'r') as f:
     lines = f.readlines()
     for line in lines:
             elements = line.strip().split()
@@ -187,7 +187,7 @@ for it in gtsam_poses:
 print(len(gtsam_x))
 
 tgrs_poses = []
-with open('/home/yixin-f/fast-lio2/src/seu/school/robustliorelo_pose.txt', 'r') as f:
+with open('/home/ian/catkin_ws/seu/school/robustliorelo_pose.txt', 'r') as f:
     lines = f.readlines()
     for line in lines:
             elements = line.strip().split()
@@ -208,7 +208,7 @@ for it in tgrs_poses:
 print(len(tgrs_x))
 
 tgrs_poses1 = []
-with open('/home/yixin-f/fast-lio2/src/seu/school/icpliorelo_pose.txt', 'r') as f:
+with open('/home/ian/catkin_ws/seu/school/icpliorelo_pose.txt', 'r') as f:
     lines = f.readlines()
     for line in lines:
             elements = line.strip().split()

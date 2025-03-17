@@ -1,6 +1,6 @@
 # 定义输入和输出文件路径
-input_file = '/home/yixin-f/fast-lio2/src/Mulran/river01/tgrs.txt'
-output_file = '/home/yixin-f/fast-lio2/src/Mulran/river01/tgrs1.txt'
+input_file = '/home/ian/catkin_ws/Mulran/river01/tgrs.txt'
+output_file = '/home/ian/catkin_ws/Mulran/river01/tgrs1.txt'
 
 # 打开输入文件并读取前 100 行内容
 with open(input_file, 'r') as f:

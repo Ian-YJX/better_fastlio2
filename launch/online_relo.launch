@@ -4,7 +4,7 @@
 
 	<rosparam command="load" file="$(find fast_lio_sam)/config/online_relo.yaml" />
 
-	<node pkg="fast_lio_sam" type="online_relo" name="online_relo" output="screen" />
+	<node pkg="fast_lio_sam" type="online_relo" name="online_relo" output="screen" launch-prefix="gdb -ex run --args" />
 
 	<group if="$(arg rviz)">
 		<node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz1" args="-d $(find fast_lio_sam)/rviz_cfg/loc_new.rviz" />

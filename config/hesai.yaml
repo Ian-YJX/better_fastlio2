@@ -61,7 +61,7 @@ mapping:
 
 ikdtree:
     max_iteration: 3
-    recontructKdTree: false  # if path is too large, the rviz will crash, but default is false
+    reconstructKdTree: false  # if path is too large, the rviz will crash, but default is false
     kd_step: 30
     filter_size_map_min: 0.2
 

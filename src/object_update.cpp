@@ -142,7 +142,7 @@ int main(int argc, char** argv){
 
     // // TODO: dynamio removal text
     // pcl::PointCloud<PointType>::Ptr test(new pcl::PointCloud<PointType>());
-    // pcl::io::loadPCDFile("/home/yixin-f/fast-lio2/src/data_dy/000077.pcd", *test);
+    // pcl::io::loadPCDFile("/home/ian/catkin_ws/data_dy/000077.pcd", *test);
     // SSC ssc(test, 1);
     // std::cout << test->points.size() << std::endl;
     // std::cout << ssc.cloud_use->points.size() << std::endl;
@@ -152,7 +152,7 @@ int main(int argc, char** argv){
     TGRS remover;
     // remover.cluster(ssc.apri_vec, ssc.hash_cloud, ssc.cluster_vox);
     // std::cout << ssc.cluster_vox.size() << std::endl;
-    // remover.saveColorCloud(ssc, "/home/yixin-f/fast-lio2/src/data_dy/000077_color.pcd");
+    // remover.saveColorCloud(ssc, "/home/ian/catkin_ws/data_dy/000077_color.pcd");
 
     // remover.recognizePD(ssc);
     // std::cout << ssc.PD_cluster.size() << std::endl;
@@ -164,7 +164,7 @@ int main(int argc, char** argv){
     //     }
     // }
     // *pcCloudGrab += *remover.getCloudByVec(pdVox, ssc.cloud_vox);
-    // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/000077_pd.pcd", *pcCloudGrab);
+    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/000077_pd.pcd", *pcCloudGrab);
 
     // PointTypePose pose_prior;
     // pose_prior.x = 0.0;
@@ -198,10 +198,10 @@ int main(int argc, char** argv){
     pose_ext.pitch = euler_r(1, 0);
     pose_ext.yaw = euler_r(2, 0);
 
-    std::string prior_path = "/home/ian/catkin_ws/parkinglot/02/PCDs";
-    std::string prior_pose = "/home/ian/catkin_ws/parkinglot/0102/aft_tansformation2.pcd";
-    std::string cur_path = "/home/ian/catkin_ws/parkinglot/03/PCDs";
-    std::string cur_pose = "/home/ian/catkin_ws/parkinglot/0103/aft_tansformation2.pcd";
+    std::string prior_path = "/home/ian/catkin_ws/outdoor/02/PCDs";
+    std::string prior_pose = "/home/ian/catkin_ws/outdoor/0102/aft_transformation2.pcd";
+    std::string cur_path = "/home/ian/catkin_ws/outdoor/03/PCDs";
+    std::string cur_pose = "/home/ian/catkin_ws/outdoor/0103/aft_transformation2.pcd";
 
     pcl::PointCloud<PointTypePose>::Ptr pri_pose(new pcl::PointCloud<PointTypePose>());
     pcl::PointCloud<PointTypePose>::Ptr aft_pose(new pcl::PointCloud<PointTypePose>());
@@ -389,15 +389,15 @@ int main(int argc, char** argv){
     prior_select->width = prior_select->points.size();
     pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/cur_map_select.pcd", *cur_select);
     pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_map_select.pcd", *prior_select);
-    // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/prior_g.pcd", *g_detect2);
-    // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/cur_g.pcd", *g_detect1);
+    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_g.pcd", *g_detect2);
+    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/cur_g.pcd", *g_detect1);
 
     curg_select->height = 1;
     curg_select->width = curg_select->points.size();
     prig_select->height = 1;
     prig_select->width = prig_select->points.size();
-    // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/curg_select.pcd", *curg_select);
-    // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/prig_select.pcd", *prig_select);
+    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/curg_select.pcd", *curg_select);
+    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prig_select.pcd", *prig_select);
 
     // pcl::VoxelGrid<PointType> filter;
     // filter.setInputCloud(cur_select);
@@ -417,8 +417,8 @@ int main(int argc, char** argv){
     pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/use.pcd", *use);
 
     pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/cur_map_ext2.pcd", *cur_map);
-    // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/prior_map.pcd", *prior_map);
-    // pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_dy/prior_map_ext.pcd", *prior_map_ext);
+    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_map.pcd", *prior_map);
+    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_map_ext.pcd", *prior_map_ext);
     pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_map_ext2.pcd", *prior_map_ext2);
     // TODO: a good demo to use the multi-session and segmentation result !! 
 
@@ -434,7 +434,7 @@ int main(int argc, char** argv){
 
     //     SSC ssc_i(cur, i);
     //     remover.cluster(ssc_i.apri_vec, ssc_i.hash_cloud, ssc_i.cluster_vox);
-    //     std::string name_ssc = (boost::format("%s/%06dscc.pcd") % "/home/yixin-f/fast-lio2/src/data_dy" % i).str();
+    //     std::string name_ssc = (boost::format("%s/%06dscc.pcd") % "/home/ian/catkin_ws/data_dy" % i).str();
     //     remover.saveColorCloud(ssc_i, name_ssc);
     //     remover.recognizePD(ssc_i);
 

@@ -475,12 +475,12 @@ bool pose_estimator::globalRelo(){
         initCloud_->clear();
         *initCloud_ += *cloudBuffer[0];
         std::cout << "init cloud size: " << initCloud_->points.size() << std::endl;
-        pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/cur_imu.pcd", *initCloud_);
+        pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/cur_imu.pcd", *initCloud_);
 
         std::cout << ANSI_COLOR_GREEN << "global relo by sc ... " << ANSI_COLOR_RESET << std::endl;
         pcl::PointCloud<PointType>::Ptr cloud_lid(new pcl::PointCloud<PointType>());
         *cloud_lid += *getBodyCloud(initCloud_, pose_ext, pose_zero);
-        pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/cur_lid.pcd", *cloud_lid);
+        pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/cur_lid.pcd", *cloud_lid);
 
         // sessions[0].scManager.makeAndSaveScancontextAndKeys(*cloud_lid);
         // detectResult = sessions[0].scManager.detectLoopClosureID();
@@ -509,23 +509,23 @@ bool pose_estimator::globalRelo(){
 
             initCloud->clear();
             *initCloud += *getAddCloud(cloud_lid, pose_com, pose_ext);
-            pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/cur_sc.pcd", *initCloud);
+            pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/cur_sc.pcd", *initCloud);
 
             nearCloud->clear();
             *nearCloud += *sessions[0].cloudKeyFrames[detectResult.first].all_cloud;
 
             pcl::PointCloud<PointType>::Ptr near_ext(new pcl::PointCloud<PointType>());
             *near_ext += *transformPointCloud(nearCloud, &pose_ext);
-            pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/near_sc.pcd", *near_ext);
+            pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/near_sc.pcd", *near_ext);
 
             nearCloud->clear();
             *nearCloud += *transformPointCloud(near_ext, &sessions[0].cloudKeyPoses6D->points[detectResult.first]);
-            pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/near_world.pcd", *nearCloud);
+            pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/near_world.pcd", *nearCloud);
         }
         else{
             initCloud->clear();
             *initCloud += *initCloud_;
-            pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/cur_sc.pcd", *initCloud);
+            pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/cur_sc.pcd", *initCloud);
         }
 
         sc_flg = true;
@@ -579,7 +579,7 @@ bool pose_estimator::globalRelo(){
             *nearCloud += *transformPointCloud(nearCloud_tmp, &sessions[0].cloudKeyPoses6D->points[idxVec[i]]);
         }
         std::cout << "near cloud size: " << nearCloud->points.size() << std::endl;
-        pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/near.pcd", *nearCloud);
+        pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/near.pcd", *nearCloud);
 
         PointTypePose poseOffset;
         poseOffset.x = poseSC.x;
@@ -590,7 +590,7 @@ bool pose_estimator::globalRelo(){
         poseOffset.yaw = 0.0;
         initCloud = transformPointCloud(initCloud, &poseOffset);
         std::cout << "init cloud size: " << initCloud->points.size() << std::endl;
-        pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/init_offset.pcd", *initCloud);
+        pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/init_offset.pcd", *initCloud);
 
         std::cout << ANSI_COLOR_GREEN << "get precise pose by FR-ICP ... " << ANSI_COLOR_RESET << std::endl;
         Eigen::MatrixXd transform = reg[0].run(initCloud, nearCloud);
@@ -609,7 +609,7 @@ bool pose_estimator::globalRelo(){
         initCloud = transformPointCloud(initCloud, &poseReg);
         initCloud->width = initCloud->points.size();
         initCloud->height = 1;
-        pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/init_result.pcd", *initCloud);
+        pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/init_result.pcd", *initCloud);
 
         Eigen::Affine3f trans_com = pcl::getTransformation(0.0, 0.0, 0.0, 0.0, 0.0, -detectResult.second);
         Eigen::Affine3f trans_offset = pcl::getTransformation(poseOffset.x, poseOffset.y, poseOffset.z, poseOffset.roll, poseOffset.pitch, poseOffset.yaw);
@@ -652,7 +652,7 @@ bool pose_estimator::globalRelo(){
 
         initCloud = transformPointCloud(initCloud, &pose_offset);
         std::cout << "init cloud size: " << initCloud->points.size() << std::endl;
-        pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/init_offset.pcd", *initCloud);
+        pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/init_offset.pcd", *initCloud);
 
         PointType tmp2;
         tmp2.x = externalPose.x;
@@ -671,7 +671,7 @@ bool pose_estimator::globalRelo(){
             // *nearCloud += *getBodyCloud(sessions[0].cloudKeyFrames[idxVec[i]].all_cloud, pose_ext, sessions[0].cloudKeyPoses6D->points[idxVec[i]]);
         }
         std::cout << "near cloud size: " << nearCloud->points.size() << std::endl;
-        pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/near.pcd", *nearCloud);
+        pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/near.pcd", *nearCloud);
         
         std::cout << ANSI_COLOR_GREEN << "get precise pose by FR-ICP ... " << ANSI_COLOR_RESET << std::endl;
         Eigen::MatrixXd transform = reg[0].run(initCloud, nearCloud);
@@ -695,7 +695,7 @@ bool pose_estimator::globalRelo(){
         initCloud = getAddCloud(initCloud, poseReg, pose_zero);
         initCloud->width = initCloud->points.size();
         initCloud->height = 1;
-        pcl::io::savePCDFile("/home/yixin-f/fast-lio2/src/data_loc/init_result.pcd", *initCloud);
+        pcl::io::savePCDFile("/home/ian/catkin_ws/data_loc/init_result.pcd", *initCloud);
 
         Eigen::Affine3f trans_offset = pcl::getTransformation(pose_offset.x, pose_offset.y, pose_offset.z, pose_offset.roll, pose_offset.pitch, pose_offset.yaw);
         Eigen::Affine3f trans_reg = pcl::getTransformation(poseReg.x, poseReg.y, poseReg.z, poseReg.roll, poseReg.pitch, poseReg.yaw);

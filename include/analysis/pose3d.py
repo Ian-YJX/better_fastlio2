@@ -12,7 +12,7 @@
 # colors = ['r', 'g', 'b', 'c', 'm', 'y']
 # for i, color in enumerate(colors):
 #     # 读取txt文件
-#     data = np.loadtxt(f'/home/yixin-f/fast-lio2/src/parkinglot/{i+1}.txt')  # 替换your_file_{i}.txt为你的文件路径
+#     data = np.loadtxt(f'/home/ian/catkin_ws/parkinglot/{i+1}.txt')  # 替换your_file_{i}.txt为你的文件路径
 #     # 每100行取前三列数据，并将第三列元素设置为0
 #     data_subset = data[::1, :12]
 #     # data_subset[:, 2] = 0
@@ -58,7 +58,7 @@ ax = fig.add_subplot(111, projection='3d')
 colors = ['r', 'g', 'b', 'c', 'm', 'y']
 for i, color in enumerate(colors):
     # 读取txt文件
-    data = np.loadtxt(f'/home/yixin-f/fast-lio2/src/parkinglot/{i+1}.txt')  # 替换your_file_{i}.txt为你的文件路径
+    data = np.loadtxt(f'/home/ian/catkin_ws/parkinglot/{i+1}.txt')  # 替换your_file_{i}.txt为你的文件路径
     # 每100行取前三列数据，并将第三列元素设置为0
     data_subset = data[::1, :12]
     data_subset[:, 2] = 0
@@ -94,7 +94,7 @@ plt.show()
 # # 循环处理每个txt文件
 # for i in range(6):
 #     # 读取txt文件
-#     data = np.loadtxt(f'/home/yixin-f/fast-lio2/src/parkinglot/{i+1}.txt')  # 替换your_file_{i}.txt为你的文件路径
+#     data = np.loadtxt(f'/home/ian/catkin_ws/parkinglot/{i+1}.txt')  # 替换your_file_{i}.txt为你的文件路径
 #     # 每500行取前两列数据
 #     data_subset = data[::1, :12]
 #     # 提取前两列数据

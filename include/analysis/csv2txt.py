@@ -1,7 +1,7 @@
 import csv
 
-file1 = '/home/yixin-f/fast-lio2/src/nclt/groundtruth_2012-02-05.csv'
-file2 = '/home/yixin-f/fast-lio2/src/nclt/groundtruth_2012-02-05.txt'
+file1 = '/home/ian/catkin_ws/nclt/groundtruth_2012-02-05.csv'
+file2 = '/home/ian/catkin_ws/nclt/groundtruth_2012-02-05.txt'
 
 with open(file1, 'r') as csv_file:
     reader = csv.reader(csv_file)

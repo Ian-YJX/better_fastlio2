@@ -28,7 +28,7 @@ public:
                   << "search radius(< 0.5) for difference detection"<< std::endl;
         method = Method(mode_);
         std::cout << ANSI_COLOR_GREEN << "register by Method " << mode_ << ANSI_COLOR_RESET << std::endl;
-        fout_time.open("/home/yixin-f/fast-lio2/src/data_loc/relo_time.txt", ios::out);
+        fout_time.open("/home/ian/catkin_ws/data_loc/relo_time.txt", ios::out);
 
     }
     ~Registeration() {}
