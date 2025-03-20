@@ -47,7 +47,7 @@ docker run -it \
     -v /dev/snd:/dev/snd \
     --device=/dev/dri:/dev/dri \
     --name="better-fast-lio2" \
-    jonathonyin/better-fast-lio2:0.2.0
+    jonathonyin/better-fast-lio2:0.2.1
 #Now you've entered the Docker container
 cd /workspace/catkin_ws/src
 git clone https://github.com/Ian-YJX/better_fastlio2
