@@ -98,7 +98,7 @@ class IncreMapping
     pcl::PointCloud<PointType>::Ptr centralMap_;
     pcl::PointCloud<PointType>::Ptr regisMap_;
 
-    float pubSize = 1.0;
+    float pubSize = 0.2;
     pcl::VoxelGrid<PointType> downSizeFilterPub;
 
     const int target_sess_idx = 1; // means the centralt session. recommend to use 1 for it (because for the stable indexing for anchor node index) 

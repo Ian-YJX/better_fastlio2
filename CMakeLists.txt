@@ -100,7 +100,7 @@ target_link_libraries(fastlio_sam_mapping
 
 add_executable(multi_session src/multi_session.cpp)
 target_link_libraries(multi_session
-  ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} ${GeographicLib_LIBRARIES} 
+  ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} ${GeographicLib_LIBRARIES}
   incremental_mapping gtsam stdc++fs Threads::Threads
 )
 

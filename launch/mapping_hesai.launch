@@ -4,7 +4,7 @@
     <arg name="rviz" default="true" />
 
     <rosparam command="load" file="$(find fast_lio_sam)/config/hesai.yaml" /> 
-    <node pkg="fast_lio_sam" type="fastlio_sam_mapping" name="laserMapping" output="screen" launch-prefix="gdb -ex run --args">
+    <node pkg="fast_lio_sam" type="fastlio_sam_mapping" name="laserMapping" output="screen">
         <param name="decimation" type="double" value="4"/>
         <param name="voxel_size" type="double" value="0.0"/> 
     </node>

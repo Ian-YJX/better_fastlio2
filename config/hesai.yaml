@@ -1,7 +1,7 @@
 common:
-    lid_topic:  "/lidar_points"
-    imu_topic:  "/vectornav/IMU"
-    camera_topic: "/usb_cam/image_raw"
+    lid_topic:  "/hesai/xt32/lidar_points"
+    imu_topic:  "/imu/imu"
+    camera_topic: "/camera/color/image_raw"
     time_sync_en: false         # ONLY turn on when external time synchronization is really not possible
 
     rootDir: "/home/ian/catkin_ws/data_lio/"
@@ -44,8 +44,8 @@ mapping:
     cube_len: 1500   
     extrinsic_est_en:  false      # true: enable the online estimation of IMU-LiDAR extrinsic
     mappingSurfLeafSize: 0.2
-    keyframeAddingDistThreshold: 1.0
-    keyframeAddingAngleThreshold: 0.2
+    keyframeAddingDistThreshold: 2.0
+    keyframeAddingAngleThreshold: 0.4
     # extrinsic_T: [ 0.031, -0.10, 0.11]  # seu
     # extrinsic_R: [ 0.9994142, 0.03275957, 0.00990251,
     #               -0.03266505,  0.99942062, -0.00956125,
@@ -61,9 +61,9 @@ mapping:
 
 ikdtree:
     max_iteration: 3
-    reconstructKdTree: false  # if path is too large, the rviz will crash, but default is false
+    reconstructKdTree: true  # if path is too large, the rviz will crash, but default is false
     kd_step: 30
-    filter_size_map_min: 0.2
+    filter_size_map_min: 0.5
 
 loop:
     loopClosureEnableFlag: false
@@ -83,7 +83,7 @@ segment:
 publish:
     path_en:  true
     scan_publish_en:  true       # false: close all the point cloud output
-    dense_publish_en: false       # false: low down the points number in a global-frame point clouds scan.
+    dense_publish_en: true       # false: low down the points number in a global-frame point clouds scan.
     scan_bodyframe_pub_en: true  # true: output the point cloud scans in IMU-body-frame
 
 visualization:

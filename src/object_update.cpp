@@ -1,8 +1,9 @@
 #include "dynamic-remove/tgrs.h"
 
-std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointCloud<PointType>::Ptr> detect(const pcl::PointCloud<PointType>::Ptr& local_, const pcl::PointCloud<PointType>::Ptr& global_, const float& search_dis_){
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr result(new pcl::PointCloud<pcl::PointXYZRGB>());  // result
-    pcl::PointCloud<PointType>::Ptr result_use(new pcl::PointCloud<PointType>());  // result
+std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointCloud<PointType>::Ptr> detect(const pcl::PointCloud<PointType>::Ptr &local_, const pcl::PointCloud<PointType>::Ptr &global_, const float &search_dis_)
+{
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr result(new pcl::PointCloud<pcl::PointXYZRGB>()); // result
+    pcl::PointCloud<PointType>::Ptr result_use(new pcl::PointCloud<PointType>());           // result
     int local_num = local_->points.size();
     std::cout << "Second local scan points num is: " << local_num << std::endl;
 
@@ -20,65 +21,73 @@ std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointCloud<PointType>::Pt
     std::cout << "First global scan points num is: " << global_num << std::endl;
 
     pcl::PointCloud<PointType>::Ptr global_select(new pcl::PointCloud<PointType>());
-    for(size_t i = 0; i < global_num; i ++){
+    for (size_t i = 0; i < global_num; i++)
+    {
         PointType pt = global_->points[i];
-        if(pt.x < min_x || pt.x > max_x || pt.y < min_y || pt.y > max_y || pt.z < min_z || pt.z > max_z)
+        if (pt.x < min_x || pt.x > max_x || pt.y < min_y || pt.y > max_y || pt.z < min_z || pt.z > max_z)
             continue;
         global_select->points.emplace_back(pt);
     }
     int select_num = global_select->points.size();
 
-    std::cout << "First glocal has been selected as num : " << select_num << " by scaled " << "\n" 
-                       << "x: " << min_x << " to  " << max_x << "\n"
-                       << "y: " << min_y << " to  " << max_y << "\n"
-                       << "z: " << min_z << " to  " << max_z << std::endl;
+    std::cout << "First glocal has been selected as num : " << select_num << " by scaled " << "\n"
+              << "x: " << min_x << " to  " << max_x << "\n"
+              << "y: " << min_y << " to  " << max_y << "\n"
+              << "z: " << min_z << " to  " << max_z << std::endl;
 
     // local search based on global
     pcl::KdTreeFLANN<PointType>::Ptr kdtree(new pcl::KdTreeFLANN<PointType>());
-    kdtree->setInputCloud(global_select);   // global select input
+    kdtree->setInputCloud(global_select); // global select input
 
     std::vector<std::pair<int, std::vector<int>>> local_find;
     std::vector<int> local_nofind;
     std::vector<int> global_match;
     std::vector<int> global_nomatch;
-    for(size_t i = 0; i < local_num; i++){
+    for (size_t i = 0; i < local_num; i++)
+    {
         std::vector<int> id;
         std::vector<float> dis;
-        kdtree->radiusSearch(local_->points[i], search_dis_, id, dis);  // local find
+        kdtree->radiusSearch(local_->points[i], search_dis_, id, dis); // local find
 
-        if(id.size() != 0){
-            local_find.emplace_back(std::make_pair(i, id));  // local find 
+        if (id.size() != 0)
+        {
+            local_find.emplace_back(std::make_pair(i, id)); // local find
         }
-        else{
-            local_nofind.emplace_back(i);  // local not find
+        else
+        {
+            local_nofind.emplace_back(i); // local not find
         }
 
-        global_match.insert(global_match.end(), id.begin(), id.end());  
+        global_match.insert(global_match.end(), id.begin(), id.end());
     }
 
     std::sort(global_match.begin(), global_match.end());
     std::vector<int>::iterator it = unique(global_match.begin(), global_match.end());
     global_match.erase(it, global_match.end()); // global match
 
-    for(size_t i = 0; i < select_num; i++){
-        if(std::find(global_match.begin(), global_match.end(), i) == global_match.end()){
-            global_nomatch.emplace_back(i);  // global match
+    for (size_t i = 0; i < select_num; i++)
+    {
+        if (std::find(global_match.begin(), global_match.end(), i) == global_match.end())
+        {
+            global_nomatch.emplace_back(i); // global match
         }
     }
 
     // local find and glocal match -> point fusion (green)
-    for(auto& pr :local_find){
+    for (auto &pr : local_find)
+    {
         pcl::PointXYZRGB pt_rgb;
         PointType pt_use;
 
         int fusion_num = pr.second.size() + 1;
         float local_ratio = 1 / fusion_num + 1;
-        float global_ratio = 1- 1 / fusion_num / pr.second.size();
+        float global_ratio = 1 - 1 / fusion_num / pr.second.size();
 
-        float x_sum = local_->points[pr.first].x * local_ratio ;
+        float x_sum = local_->points[pr.first].x * local_ratio;
         float y_sum = local_->points[pr.first].y * local_ratio;
         float z_sum = local_->points[pr.first].z * local_ratio;
-        for(auto& pr0 : pr.second){
+        for (auto &pr0 : pr.second)
+        {
             x_sum += global_select->points[pr0].x * global_ratio;
             y_sum += global_select->points[pr0].y * global_ratio;
             z_sum += global_select->points[pr0].z * global_ratio;
@@ -92,13 +101,14 @@ std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointCloud<PointType>::Pt
         pt_rgb.r = 0;
         pt_rgb.g = 0;
         pt_rgb.b = 255.0;
-        result->points.emplace_back(pt_rgb);  // save
-        result_use->points.emplace_back(pt_use);  // save
+        result->points.emplace_back(pt_rgb);     // save
+        result_use->points.emplace_back(pt_use); // save
     }
-    std::cout << "local find and glocal match -> fusion" << std::endl; 
+    std::cout << "local find and glocal match -> fusion" << std::endl;
 
     // local not find -> new
-    for(auto& vi : local_nofind){
+    for (auto &vi : local_nofind)
+    {
         PointType pt_use;
         pcl::PointXYZRGB pt_rgb;
         pt_rgb.x = local_->points[vi].x;
@@ -111,13 +121,14 @@ std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointCloud<PointType>::Pt
         pt_use.y = local_->points[vi].y;
         pt_use.z = local_->points[vi].z;
 
-        result->points.emplace_back(pt_rgb);  // save
+        result->points.emplace_back(pt_rgb); // save
         result_use->points.emplace_back(pt_use);
     }
-    std::cout << "local not find -> new" << std::endl; 
+    std::cout << "local not find -> new" << std::endl;
 
     // global not match -> old
-    for(auto& vi : global_nomatch){
+    for (auto &vi : global_nomatch)
+    {
         pcl::PointXYZRGB pt_rgb;
         pt_rgb.x = global_select->points[vi].x;
         pt_rgb.y = global_select->points[vi].y;
@@ -125,18 +136,19 @@ std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointCloud<PointType>::Pt
         pt_rgb.r = 255.0;
         pt_rgb.g = 0;
         pt_rgb.b = 0;
-        result->points.emplace_back(pt_rgb);  // save
+        result->points.emplace_back(pt_rgb); // save
     }
-    std::cout << "global not match -> old" << std::endl; 
+    std::cout << "global not match -> old" << std::endl;
 
     result->height = 1;
     result->width = result->points.size();
     std::cout << "result num: " << result->points.size() << std::endl;
-    
+
     return std::make_pair(result, result_use);
 }
 
-int main(int argc, char** argv){
+int main(int argc, char **argv)
+{
     ros::init(argc, argv, "DY-Remover");
     ROS_INFO("\033[1;32m----> dynamic remove.\033[0m");
 
@@ -213,7 +225,8 @@ int main(int argc, char** argv){
 
     pcl::io::loadPCDFile(prior_pose, *pri_pose);
     std::cout << "session size: " << pri_pose->points.size() << std::endl;
-    for(size_t i = 0; i < pri_pose->points.size(); i ++){
+    for (size_t i = 0; i < pri_pose->points.size(); i++)
+    {
         PointType pt;
         pt.x = pri_pose->points[i].x;
         pt.y = pri_pose->points[i].y;
@@ -221,7 +234,7 @@ int main(int argc, char** argv){
         pri_kd->points.emplace_back(pt);
     }
 
-    // TODO: a good demo to use the multi-session and segmentation result !! 
+    // TODO: a good demo to use the multi-session and segmentation result !!
     pcl::PointCloud<PointType>::Ptr prior_map(new pcl::PointCloud<PointType>());
     pcl::PointCloud<PointType>::Ptr prior_map_ext(new pcl::PointCloud<PointType>());
     pcl::PointCloud<PointType>::Ptr prior_map_ext2(new pcl::PointCloud<PointType>());
@@ -246,7 +259,8 @@ int main(int argc, char** argv){
     // 05 -> 04 --- 420~450/3 : 340~370/3
     // 06 -> 05 --- 390~420/3 : 420~450/3
 
-    for(size_t i = 390; i < 420; i += 3){
+    for (size_t i = 0; i < 302; i++)
+    {
         pcl::PointCloud<PointType>::Ptr cur(new pcl::PointCloud<PointType>());
         std::string name_cur = (boost::format("%s/%06d.pcd") % cur_path % i).str();
         std::cout << name_cur << std::endl;
@@ -258,8 +272,10 @@ int main(int argc, char** argv){
         remover.recognizePD(ssc_i);
 
         std::vector<int> ptid;
-        for(auto& it : ssc_i.PD_cluster){
-            for(auto& is : ssc_i.cluster_vox[it]){
+        for (auto &it : ssc_i.PD_cluster)
+        {
+            for (auto &is : ssc_i.cluster_vox[it])
+            {
                 addVec(ptid, ssc_i.hash_cloud[is].ptIdx);
             }
         }
@@ -277,18 +293,17 @@ int main(int argc, char** argv){
         pcl::PointCloud<PointType>::Ptr tmp4(new pcl::PointCloud<PointType>());
         *tmp4 += *transformPointCloud(ssc_i.cloud_g, &pose_ext);
         *g_detect1 += *transformPointCloud(tmp4, &aft_pose->points[i]);
-
     }
 
-    for(size_t i = 420; i < 450; i += 3){
+    for (size_t i = 0; i < 303; i++)
+    {
         pcl::PointCloud<PointType>::Ptr prior(new pcl::PointCloud<PointType>());
         std::string name_prior = (boost::format("%s/%06d.pcd") % prior_path % i).str();
         std::cout << name_prior << std::endl;
         // std::string name_prior = prior_path + std::to_string(i);
         pcl::io::loadPCDFile(name_prior, *prior);
-        
 
-        // Eigen::Affine3f trans_prior_i = pcl::getTransformation(pri_pose->points[i].x, pri_pose->points[i].y, pri_pose->points[i].z, 
+        // Eigen::Affine3f trans_prior_i = pcl::getTransformation(pri_pose->points[i].x, pri_pose->points[i].y, pri_pose->points[i].z,
         //                                                         pri_pose->points[i].roll, pri_pose->points[i].pitch, pri_pose->points[i].yaw);
         // Eigen::Affine3f trans = trans_prior_i * ext_rr;
         // pcl::PointCloud<PointType>::Ptr prior_ext(new pcl::PointCloud<PointType>());
@@ -300,8 +315,10 @@ int main(int argc, char** argv){
         remover.recognizePD(ssc_i);
 
         std::vector<int> ptid;
-        for(auto& it : ssc_i.PD_cluster){
-            for(auto& is : ssc_i.cluster_vox[it]){
+        for (auto &it : ssc_i.PD_cluster)
+        {
+            for (auto &is : ssc_i.cluster_vox[it])
+            {
                 addVec(ptid, ssc_i.hash_cloud[is].ptIdx);
             }
         }
@@ -333,55 +350,70 @@ int main(int argc, char** argv){
     max.x = (heightPair_p.second.x < heightPair_c.second.x) ? heightPair_p.second.x : heightPair_c.second.x;
     max.y = (heightPair_p.second.y < heightPair_c.second.y) ? heightPair_p.second.y : heightPair_c.second.y;
     max.z = (heightPair_p.second.z < heightPair_c.second.z) ? heightPair_p.second.z : heightPair_c.second.z;
-    for(size_t i = 0; i < prior_map_ext2->points.size(); i++){
-        if(prior_map_ext2->points[i].x < min.x || prior_map_ext2->points[i].x > max.x){
+    for (size_t i = 0; i < prior_map_ext2->points.size(); i++)
+    {
+        if (prior_map_ext2->points[i].x < min.x || prior_map_ext2->points[i].x > max.x)
+        {
             continue;
         }
-        if(prior_map_ext2->points[i].y < min.y || prior_map_ext2->points[i].y > max.y){
+        if (prior_map_ext2->points[i].y < min.y || prior_map_ext2->points[i].y > max.y)
+        {
             continue;
         }
-        if(prior_map_ext2->points[i].z < min.z || prior_map_ext2->points[i].z > max.z){
+        if (prior_map_ext2->points[i].z < min.z || prior_map_ext2->points[i].z > max.z)
+        {
             continue;
         }
         prior_select->points.emplace_back(prior_map_ext2->points[i]);
     }
-    for(size_t i = 0; i < cur_map->points.size(); i++){
-        if(cur_map->points[i].x < min.x || cur_map->points[i].x > max.x){
+    for (size_t i = 0; i < cur_map->points.size(); i++)
+    {
+        if (cur_map->points[i].x < min.x || cur_map->points[i].x > max.x)
+        {
             continue;
         }
-        if(cur_map->points[i].y < min.y || cur_map->points[i].y > max.y){
+        if (cur_map->points[i].y < min.y || cur_map->points[i].y > max.y)
+        {
             continue;
         }
-        if(cur_map->points[i].z < min.z || cur_map->points[i].z > max.z){
+        if (cur_map->points[i].z < min.z || cur_map->points[i].z > max.z)
+        {
             continue;
         }
         cur_select->points.emplace_back(cur_map->points[i]);
     }
-    for(size_t i = 0; i < g_detect1->points.size(); i++){
-        if(g_detect1->points[i].x < min.x || g_detect1->points[i].x > max.x){
+    for (size_t i = 0; i < g_detect1->points.size(); i++)
+    {
+        if (g_detect1->points[i].x < min.x || g_detect1->points[i].x > max.x)
+        {
             continue;
         }
-        if(g_detect1->points[i].y < min.y || g_detect1->points[i].y > max.y){
+        if (g_detect1->points[i].y < min.y || g_detect1->points[i].y > max.y)
+        {
             continue;
         }
-        if(g_detect1->points[i].z < min.z || g_detect1->points[i].z > max.z){
+        if (g_detect1->points[i].z < min.z || g_detect1->points[i].z > max.z)
+        {
             continue;
         }
         prig_select->points.emplace_back(g_detect1->points[i]);
     }
-    for(size_t i = 0; i < g_detect2->points.size(); i++){
-        if(g_detect2->points[i].x < min.x || g_detect2->points[i].x > max.x){
+    for (size_t i = 0; i < g_detect2->points.size(); i++)
+    {
+        if (g_detect2->points[i].x < min.x || g_detect2->points[i].x > max.x)
+        {
             continue;
         }
-        if(g_detect2->points[i].y < min.y || g_detect2->points[i].y > max.y){
+        if (g_detect2->points[i].y < min.y || g_detect2->points[i].y > max.y)
+        {
             continue;
         }
-        if(g_detect2->points[i].z < min.z || g_detect2->points[i].z > max.z){
+        if (g_detect2->points[i].z < min.z || g_detect2->points[i].z > max.z)
+        {
             continue;
         }
         curg_select->points.emplace_back(g_detect2->points[i]);
     }
-
 
     cur_select->height = 1;
     cur_select->width = cur_select->points.size();
@@ -389,23 +421,11 @@ int main(int argc, char** argv){
     prior_select->width = prior_select->points.size();
     pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/cur_map_select.pcd", *cur_select);
     pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_map_select.pcd", *prior_select);
-    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_g.pcd", *g_detect2);
-    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/cur_g.pcd", *g_detect1);
 
     curg_select->height = 1;
     curg_select->width = curg_select->points.size();
     prig_select->height = 1;
     prig_select->width = prig_select->points.size();
-    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/curg_select.pcd", *curg_select);
-    // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prig_select.pcd", *prig_select);
-
-    // pcl::VoxelGrid<PointType> filter;
-    // filter.setInputCloud(cur_select);
-    // filter.setLeafSize(0.2f, 0.2f, 0.2f);
-    // filter.filter(*cur_select);
-    // filter.setInputCloud(prior_select);
-    // filter.setLeafSize(0.2f, 0.2f, 0.2f);
-    // filter.filter(*prior_select);
 
     result = detect(pd_detect1, pd_detect2, 0.4).first;
     use = detect(pd_detect1, pd_detect2, 0.4).second;
@@ -420,51 +440,6 @@ int main(int argc, char** argv){
     // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_map.pcd", *prior_map);
     // pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_map_ext.pcd", *prior_map_ext);
     pcl::io::savePCDFile("/home/ian/catkin_ws/data_dy/prior_map_ext2.pcd", *prior_map_ext2);
-    // TODO: a good demo to use the multi-session and segmentation result !! 
-
-    // // TODO: object-level fusion and update
-    // pcl::KdTreeFLANN<PointType>::Ptr kdtreePriorMapPoses(new pcl::KdTreeFLANN<PointType>());
-    // kdtreePriorMapPoses->setInputCloud(pri_kd);
-
-    // for(size_t i = 0; i < 20; i ++){
-    //     pcl::PointCloud<PointType>::Ptr cur(new pcl::PointCloud<PointType>());
-    //     std::string name_cur = (boost::format("%s/%06d.pcd") % cur_path % i).str();
-    //     std::cout << name_cur << std::endl;
-    //     pcl::io::loadPCDFile(name_cur, *cur);
-
-    //     SSC ssc_i(cur, i);
-    //     remover.cluster(ssc_i.apri_vec, ssc_i.hash_cloud, ssc_i.cluster_vox);
-    //     std::string name_ssc = (boost::format("%s/%06dscc.pcd") % "/home/ian/catkin_ws/data_dy" % i).str();
-    //     remover.saveColorCloud(ssc_i, name_ssc);
-    //     remover.recognizePD(ssc_i);
-
-    //     Eigen::Affine3f trans_cur_i = pcl::getTransformation(aft_pose->points[i].x, aft_pose->points[i].y, aft_pose->points[i].z, 
-    //                                                 aft_pose->points[i].roll, aft_pose->points[i].pitch, aft_pose->points[i].yaw);
-    //     Eigen::Affine3f aft_ = trans_cur_i * ext_rr;
-
-    //     float aft[6];
-    //     pcl::getTranslationAndEulerAngles(aft_, aft[0], aft[1], aft[2], aft[3], aft[4], aft[5]);
-    //     PointTypePose pose_aft;
-    //     pose_aft.x = aft[0];
-    //     pose_aft.y = aft[1];
-    //     pose_aft.z = aft[2];
-    //     pose_aft.roll = aft[3];
-    //     pose_aft.pitch = aft[4];
-    //     pose_aft.yaw = aft[5];
-
-    //     std::vector<int> idxs;
-    //     std::vector<float> dis;
-    //     PointType pt;
-    //     pt.x = aft_pose->points[i].x;
-    //     pt.y = aft_pose->points[i].y;
-    //     pt.z = aft_pose->points[i].z;
-    //     kdtreePriorMapPoses->radiusSearch(pt, 5, idxs, dis);
-    //     if(idxs.size() == 0){
-    //         continue;
-    //     }
-
-    // }
-    // // TODO: object-level fusion and update
 
     return 0;
 }

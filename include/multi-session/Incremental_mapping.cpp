@@ -372,6 +372,8 @@ void MultiSession::IncreMapping::run( int iteration ){
     getReloKeyFrames();  // get relo clouds
 
     std::string aftMap2 = sessions_dir_ + save_directory_ + "aft_map2.pcd";
+    if(regisMap_->empty())
+        ROS_WARN("regisMap is empty");
     downSizeFilterPub.setInputCloud(regisMap_);
     downSizeFilterPub.filter(*regisMap_);
     pcl::io::savePCDFileASCII(aftMap2, *regisMap_);
