@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(fast_lio_sam)
+project(multi_session)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
@@ -53,7 +53,7 @@ find_package(PythonLibs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs nav_msgs sensor_msgs roscpp rospy std_msgs pcl_ros tf
   livox_ros_driver message_generation eigen_conversions cv_bridge
-  image_transport darknet_ros_msgs
+  image_transport
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake/geographiclib")
@@ -92,11 +92,6 @@ add_library(pose_estimator include/online-relo/pose_estimator.cpp include/sc-rel
 add_library(tgrs include/dynamic-remove/tgrs.cpp)
 
 # 添加可执行文件并正确链接 pthread 和其他库
-add_executable(fastlio_sam_mapping src/laserMapping.cpp)
-target_link_libraries(fastlio_sam_mapping
-  ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} ${GeographicLib_LIBRARIES} 
-  ${OpenCV_LIBRARIES} ikd_Tree preprocess sc gtsam stdc++fs Threads::Threads
-)
 
 add_executable(multi_session src/multi_session.cpp)
 target_link_libraries(multi_session
@@ -104,14 +99,3 @@ target_link_libraries(multi_session
   incremental_mapping gtsam stdc++fs Threads::Threads
 )
 
-add_executable(online_relo src/online_relocalization.cpp)
-target_link_libraries(online_relo
-  ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} ${GeographicLib_LIBRARIES} 
-  ${OpenCV_LIBRARIES} pose_estimator incremental_mapping gtsam stdc++fs Threads::Threads
-)
-
-add_executable(object_update src/object_update.cpp)
-target_link_libraries(object_update
-  ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} ${GeographicLib_LIBRARIES} 
-  ${OpenCV_LIBRARIES} tgrs gtsam stdc++fs Threads::Threads
-)

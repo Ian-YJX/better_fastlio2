@@ -124,10 +124,10 @@
 #include <Python.h>
 
 // user
-#include <fast_lio_sam/Pose6D.h>
-#include <fast_lio_sam/save_map.h>
-#include <fast_lio_sam/save_pose.h>
-#include <fast_lio_sam/cloud_info.h>
+#include <multi_session/Pose6D.h>
+#include <multi_session/save_map.h>
+#include <multi_session/save_pose.h>
+#include <multi_session/cloud_info.h>
 #include "math_tools.h"
 
 // namesapce
@@ -156,7 +156,7 @@ namespace fs = std::experimental::filesystem;
 // #define DEBUG_FILE_DIR(name)     (string(string(DT_DIR) + "Log/"+ name))
 #define DEBUG_FILE_DIR(name) (string(string(ROOT_DIR) + "Log/" + name))
 
-typedef fast_lio_sam::Pose6D Pose6D;
+typedef multi_session::Pose6D Pose6D;
 typedef pcl::PointXYZINormal PointType;
 // typedef pcl::PointCloud<PointType> PointCloudXYZI; // just for fast-lio2
 typedef vector<PointType, Eigen::aligned_allocator<PointType>> PointVector;

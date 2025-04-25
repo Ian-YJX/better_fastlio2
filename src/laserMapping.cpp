@@ -1715,7 +1715,7 @@ bool CreateFile(std::ofstream &ofs, std::string file_path)
     return true;
 }
 
-bool savePoseService(fast_lio_sam::save_poseRequest &req, fast_lio_sam::save_poseResponse &res)
+bool savePoseService(multi_session::save_poseRequest &req, multi_session::save_poseResponse &res)
 {
     pose pose_optimized;
     pose pose_without_optimized;
@@ -1750,7 +1750,7 @@ bool savePoseService(fast_lio_sam::save_poseRequest &req, fast_lio_sam::save_pos
 }
 
 // 保存全局关键帧特征点集合
-// bool saveMapService(fast_lio_sam::save_mapRequest &req, fast_lio_sam::save_mapResponse &res)
+// bool saveMapService(multi_session::save_mapRequest &req, multi_session::save_mapResponse &res)
 // {
 //     // string saveMapDirectory;
 //     cout << "****************************************************" << endl;
@@ -1819,8 +1819,8 @@ bool savePoseService(fast_lio_sam::save_poseRequest &req, fast_lio_sam::save_pos
 // }
 // void saveMap()
 // {
-//     fast_lio_sam::save_mapRequest req;
-//     fast_lio_sam::save_mapResponse res;
+//     multi_session::save_mapRequest req;
+//     multi_session::save_mapResponse res;
 //     // 保存全局关键帧特征点集合
 //     if (!saveMapService(req, res))
 //     {
@@ -2206,17 +2206,17 @@ int main(int argc, char **argv)
     ros::Publisher pubOdomAftMapped = nh.advertise<nav_msgs::Odometry>("/Odometry", 100000);
     ros::Publisher pubPath = nh.advertise<nav_msgs::Path>("/path", 1e00000);
     ros::Publisher pubPathIMU = nh.advertise<nav_msgs::Path>("/path_imu", 1e00000);
-    ros::Publisher pubPathUpdate = nh.advertise<nav_msgs::Path>("fast_lio_sam/path_update", 100000); // isam更新后的path
+    ros::Publisher pubPathUpdate = nh.advertise<nav_msgs::Path>("multi_session/path_update", 100000); // isam更新后的path
 
-    pubLaserCloudSurround = nh.advertise<sensor_msgs::PointCloud2>("fast_lio_sam/mapping/keyframe_submap", 1);      // 发布局部关键帧map的特征点云
-    pubOptimizedGlobalMap = nh.advertise<sensor_msgs::PointCloud2>("fast_lio_sam/mapping/map_global_optimized", 1); // 发布局部关键帧map的特征点云
+    pubLaserCloudSurround = nh.advertise<sensor_msgs::PointCloud2>("multi_session/mapping/keyframe_submap", 1);      // 发布局部关键帧map的特征点云
+    pubOptimizedGlobalMap = nh.advertise<sensor_msgs::PointCloud2>("multi_session/mapping/map_global_optimized", 1); // 发布局部关键帧map的特征点云
     pubLidarPCL = nh.advertise<sensor_msgs::PointCloud2>("/livox/lidar_repub", 100000);
     // 发布回环匹配关键帧局部map
-    pubHistoryKeyFrames = nh.advertise<sensor_msgs::PointCloud2>("fast_lio_sam/mapping/icp_loop_closure_history_cloud", 1);
+    pubHistoryKeyFrames = nh.advertise<sensor_msgs::PointCloud2>("multi_session/mapping/icp_loop_closure_history_cloud", 1);
     // 发布当前关键帧经过回环优化后的位姿变换之后的特征点云
-    pubIcpKeyFrames = nh.advertise<sensor_msgs::PointCloud2>("fast_lio_sam/mapping/icp_loop_closure_corrected_cloud", 1);
+    pubIcpKeyFrames = nh.advertise<sensor_msgs::PointCloud2>("multi_session/mapping/icp_loop_closure_corrected_cloud", 1);
     // 发布回环边,rviz中表现为回环帧之间的连线
-    pubLoopConstraintEdge = nh.advertise<visualization_msgs::MarkerArray>("/fast_lio_sam/mapping/loop_closure_constraints", 1);
+    pubLoopConstraintEdge = nh.advertise<visualization_msgs::MarkerArray>("/multi_session/mapping/loop_closure_constraints", 1);
 
     // // saveMap发布地图保存服务
     // srvSaveMap = nh.advertiseService("/save_map", &saveMapService);

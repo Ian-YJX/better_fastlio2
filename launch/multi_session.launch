@@ -2,12 +2,12 @@
 
 	<arg name="rviz" default="true" />
 
-	<rosparam command="load" file="$(find fast_lio_sam)/config/multi_session.yaml" />
+	<rosparam command="load" file="$(find multi_session)/config/multi_session.yaml" />
 
-	<node pkg="fast_lio_sam" type="multi_session" name="multi_session" output="screen"/>
+	<node pkg="multi_session" type="multi_session" name="multi_session" output="screen"/>
 
 	<group if="$(arg rviz)">
-		<node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find fast_lio_sam)/rviz_cfg/sc_relo.rviz" />
+		<node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find multi_session)/rviz_cfg/sc_relo.rviz" />
 	</group>
 
 </launch>
